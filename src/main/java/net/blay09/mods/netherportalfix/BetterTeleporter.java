@@ -40,7 +40,6 @@ public class BetterTeleporter extends Teleporter {
                 }
             }
             returnPortalMap.put(entity, Pair.of(from, to));
-            System.out.println("ReturnMap: " + returnPortals.size());
         } else {
             super.placeInPortal(entity, oldX, oldY, oldZ, rotationYaw);
         }
