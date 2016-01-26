@@ -1,11 +1,11 @@
 package net.blay09.mods.netherportalfix;
 
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 @Mod(modid = "netherportalfix", name = "Nether Portal Fix", acceptableRemoteVersions = "*")
 public class NetherPortalFix {
@@ -18,7 +18,7 @@ public class NetherPortalFix {
     @SubscribeEvent
     public void onWorldLoad(WorldEvent.Load event) {
         if(event.world instanceof WorldServer) {
-            if(event.world.provider.getDimensionId() == 0 || event.world.provider.getDimensionId() == -1) {
+            if(event.world.provider.dimensionId == 0 || event.world.provider.dimensionId == -1) {
                 ((WorldServer) event.world).worldTeleporter = new BetterTeleporter((WorldServer) event.world);
             }
         }
