@@ -78,11 +78,11 @@ public class BetterTeleporter extends Teleporter {
                         destinationCoordinateCache.add(key, oldValue);
                     }
                     tagList.removeTag(i);
+                    tagCompound.setTag(NBT_RETURN_PORTALS, tagList);
+                    entity.getEntityData().setTag(EntityPlayer.PERSISTED_NBT_TAG, tagCompound);
                     return result;
                 }
             }
-            tagCompound.setTag(NBT_RETURN_PORTALS, tagList);
-            entity.getEntityData().setTag(EntityPlayer.PERSISTED_NBT_TAG, tagCompound);
         }
         return super.placeInExistingPortal(entity, rotationYaw);
     }
