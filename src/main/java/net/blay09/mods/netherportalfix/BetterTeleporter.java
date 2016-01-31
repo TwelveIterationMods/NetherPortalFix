@@ -1,24 +1,30 @@
 package net.blay09.mods.netherportalfix;
 
-import com.google.common.collect.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
-import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.Collection;
-import java.util.Iterator;
+import net.minecraftforge.common.util.Constants;
 
 public class BetterTeleporter extends Teleporter {
 
-    public static final int PORTAL_RANGE_SQR = 9;
+    private static final int PORTAL_RANGE_SQR = 9;
+    private static final String NBT_RETURN_PORTALS = "ReturnPortals";
+    private static final String NBT_FROM_X = "FromX";
+    private static final String NBT_FROM_Y = "FromY";
+    private static final String NBT_FROM_Z = "FromZ";
+    private static final String NBT_FROM_DIM = "FromDim";
+    private static final String NBT_TO_X = "ToX";
+    private static final String NBT_TO_Y = "ToY";
+    private static final String NBT_TO_Z = "ToZ";
+    private static final String NBT_TO_DIM = "ToDim";
 
     private final WorldServer world;
-    private static Multimap<Entity, Pair<PortalPositionAndDimension, PortalPositionAndDimension>> returnPortalMap = ArrayListMultimap.create();
 
     public BetterTeleporter(WorldServer world) {
         super(world);
@@ -27,19 +33,35 @@ public class BetterTeleporter extends Teleporter {
 
     @Override
     public void placeInPortal(Entity entity, double oldX, double oldY, double oldZ, float rotationYaw) {
-        if(entity instanceof EntityPlayer) {
+        if (entity instanceof EntityPlayer) {
             PortalPositionAndDimension from = new PortalPositionAndDimension((int) oldX, (int) oldY, (int) oldZ); // lastPortalPos
             super.placeInPortal(entity, oldX, oldY, oldZ, rotationYaw);
             PortalPositionAndDimension to = new PortalPositionAndDimension(((EntityPlayer) entity).getPlayerCoordinates());
-            Collection<Pair<PortalPositionAndDimension, PortalPositionAndDimension>> returnPortals = returnPortalMap.get(entity);
-            Iterator<Pair<PortalPositionAndDimension, PortalPositionAndDimension>> it = returnPortals.iterator();
-            while(it.hasNext()) {
-                Pair<PortalPositionAndDimension, PortalPositionAndDimension> returnPortal = it.next();
-                if (returnPortal.getRight().dimensionId == entity.worldObj.provider.dimensionId && returnPortal.getRight().getDistanceSquaredToChunkCoordinates(to) <= PORTAL_RANGE_SQR) { // lastPortalPos
-                    it.remove();
+            NBTTagCompound tagCompound = entity.getEntityData().getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG);
+            NBTTagList tagList = tagCompound.getTagList(NBT_RETURN_PORTALS, Constants.NBT.TAG_COMPOUND);
+            for (int i = tagList.tagCount() - 1; i >= 0; i--) {
+                NBTTagCompound portalCompound = tagList.getCompoundTagAt(i);
+                int toX = portalCompound.getInteger(NBT_TO_X);
+                int toY = portalCompound.getInteger(NBT_TO_Y);
+                int toZ = portalCompound.getInteger(NBT_TO_Z);
+                PortalPositionAndDimension testTo = new PortalPositionAndDimension(toX, toY, toZ, portalCompound.getInteger(NBT_TO_DIM));
+                System.out.println(testTo.getDistanceSquaredToChunkCoordinates(to));
+                if (testTo.dimensionId == entity.worldObj.provider.dimensionId && testTo.getDistanceSquaredToChunkCoordinates(to) <= PORTAL_RANGE_SQR) {
+                    tagList.removeTag(i);
                 }
             }
-            returnPortalMap.put(entity, Pair.of(from, to));
+            NBTTagCompound portalCompound = new NBTTagCompound();
+            portalCompound.setInteger(NBT_FROM_X, from.posX);
+            portalCompound.setInteger(NBT_FROM_Y, from.posY);
+            portalCompound.setInteger(NBT_FROM_Z, from.posZ);
+            portalCompound.setInteger(NBT_FROM_DIM, from.dimensionId);
+            portalCompound.setInteger(NBT_TO_X, to.posX);
+            portalCompound.setInteger(NBT_TO_Y, to.posY);
+            portalCompound.setInteger(NBT_TO_Z, to.posZ);
+            portalCompound.setInteger(NBT_TO_DIM, to.dimensionId);
+            tagList.appendTag(portalCompound);
+            tagCompound.setTag(NBT_RETURN_PORTALS, tagList);
+            entity.getEntityData().setTag(EntityPlayer.PERSISTED_NBT_TAG, tagCompound);
         } else {
             super.placeInPortal(entity, oldX, oldY, oldZ, rotationYaw);
         }
@@ -48,25 +70,35 @@ public class BetterTeleporter extends Teleporter {
     @Override
     public boolean placeInExistingPortal(Entity entity, double oldX, double oldY, double oldZ, float rotationYaw) {
         if (entity instanceof EntityPlayer) {
-            Collection<Pair<PortalPositionAndDimension, PortalPositionAndDimension>> returnPortals = returnPortalMap.get(entity);
-            Iterator<Pair<PortalPositionAndDimension, PortalPositionAndDimension>> it = returnPortals.iterator();
-            PortalPosition lastPortalPosition = new PortalPosition((int) oldX, (int) oldY, (int) oldZ, world.getTotalWorldTime());
-            while(it.hasNext()) {
-                Pair<PortalPositionAndDimension, PortalPositionAndDimension> returnPortal = it.next();
-                if (returnPortal.getRight().dimensionId == entity.worldObj.provider.dimensionId && returnPortal.getRight().getDistanceSquaredToChunkCoordinates(lastPortalPosition) <= PORTAL_RANGE_SQR) { // lastPortalPos
+            NBTTagCompound tagCompound = entity.getEntityData().getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG);
+            NBTTagList tagList = tagCompound.getTagList(NBT_RETURN_PORTALS, Constants.NBT.TAG_COMPOUND);
+            for(int i = tagList.tagCount() - 1; i >= 0; i--) {
+                NBTTagCompound portalCompound = tagList.getCompoundTagAt(i);
+                int toX = portalCompound.getInteger(NBT_TO_X);
+                int toY = portalCompound.getInteger(NBT_TO_Y);
+                int toZ = portalCompound.getInteger(NBT_TO_Z);
+                PortalPositionAndDimension to = new PortalPositionAndDimension(toX, toY, toZ, portalCompound.getInteger(NBT_TO_DIM));
+                PortalPosition lastPortalPosition = new PortalPosition((int) oldX, (int) oldY, (int) oldZ, world.getTotalWorldTime());
+                if (to.dimensionId == entity.worldObj.provider.dimensionId && to.getDistanceSquaredToChunkCoordinates(lastPortalPosition) <= PORTAL_RANGE_SQR) {
                     int x = MathHelper.floor_double(entity.posX);
                     int y = MathHelper.floor_double(entity.posZ);
                     long key = ChunkCoordIntPair.chunkXZ2Int(x, y);
                     PortalPosition oldValue = (PortalPosition) destinationCoordinateCache.getValueByKey(key);
-                    destinationCoordinateCache.add(key, returnPortal.getLeft());
-                    if(!destinationCoordinateKeys.contains(key)) {
+                    int fromX = portalCompound.getInteger(NBT_FROM_X);
+                    int fromY = portalCompound.getInteger(NBT_FROM_Y);
+                    int fromZ = portalCompound.getInteger(NBT_FROM_Z);
+                    PortalPositionAndDimension from = new PortalPositionAndDimension(fromX, fromY, fromZ, portalCompound.getInteger(NBT_FROM_DIM));
+                    destinationCoordinateCache.add(key, from);
+                    if (!destinationCoordinateKeys.contains(key)) {
                         destinationCoordinateKeys.add(key);
                     }
                     boolean result = super.placeInExistingPortal(entity, oldX, oldY, oldZ, rotationYaw);
-                    if(oldValue != null) {
+                    if (oldValue != null) {
                         destinationCoordinateCache.add(key, oldValue);
                     }
-                    it.remove();
+                    tagList.removeTag(i);
+                    tagCompound.setTag(NBT_RETURN_PORTALS, tagList);
+                    entity.getEntityData().setTag(EntityPlayer.PERSISTED_NBT_TAG, tagCompound);
                     return result;
                 }
             }
@@ -74,29 +106,20 @@ public class BetterTeleporter extends Teleporter {
         return super.placeInExistingPortal(entity, oldX, oldY, oldZ, rotationYaw);
     }
 
-    @Override
-    public void removeStalePortalLocations(long worldTime) {
-        super.removeStalePortalLocations(worldTime);
-
-        Iterator<Entity> it = returnPortalMap.keySet().iterator();
-        while(it.hasNext()) {
-            if(it.next().isDead) {
-                it.remove();
-            }
-        }
-    }
-
     public class PortalPositionAndDimension extends PortalPosition {
         public final int dimensionId;
 
         public PortalPositionAndDimension(ChunkCoordinates pos) {
-            super(pos.posX, pos.posY, pos.posZ, world.getWorldTime());
-            dimensionId = world.provider.dimensionId;
+            this(pos.posX, pos.posY, pos.posZ, world.provider.dimensionId);
         }
 
         public PortalPositionAndDimension(int x, int y, int z) {
+            this(x, y, z, world.provider.dimensionId);
+        }
+
+        public PortalPositionAndDimension(int x, int y, int z, int dimensionId) {
             super(x, y, z, world.getWorldTime());
-            this.dimensionId = world.provider.dimensionId;
+            this.dimensionId = dimensionId;
         }
     }
 
