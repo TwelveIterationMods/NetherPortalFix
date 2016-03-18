@@ -4,8 +4,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
@@ -30,7 +30,7 @@ public class BetterTeleporter extends Teleporter {
     @Override
     public void placeInPortal(Entity entity, float rotationYaw) {
         if(entity instanceof EntityPlayer) {
-            PortalPositionAndDimension from = new PortalPositionAndDimension(entity.field_181016_an);
+            PortalPositionAndDimension from = new PortalPositionAndDimension(entity.lastPortalPos);
             super.placeInPortal(entity, rotationYaw);
             PortalPositionAndDimension to = new PortalPositionAndDimension(entity.getPosition());
             NBTTagCompound tagCompound = entity.getEntityData().getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG);
@@ -38,7 +38,7 @@ public class BetterTeleporter extends Teleporter {
             for(int i = tagList.tagCount() - 1; i >= 0; i--) {
                 NBTTagCompound portalCompound = tagList.getCompoundTagAt(i);
                 PortalPositionAndDimension testTo = new PortalPositionAndDimension(BlockPos.fromLong(portalCompound.getLong(NBT_TO)), portalCompound.getInteger(NBT_TO_DIM));
-                if(testTo.dimensionId == entity.worldObj.provider.getDimensionId() && testTo.distanceSq(to) <= PORTAL_RANGE_SQR) {
+                if(testTo.dimensionId == entity.worldObj.provider.getDimension() && testTo.distanceSq(to) <= PORTAL_RANGE_SQR) {
                     tagList.removeTag(i);
                 }
             }
@@ -63,7 +63,7 @@ public class BetterTeleporter extends Teleporter {
             for(int i = tagList.tagCount() - 1; i >= 0; i--) {
                 NBTTagCompound portalCompound = tagList.getCompoundTagAt(i);
                 PortalPositionAndDimension to = new PortalPositionAndDimension(BlockPos.fromLong(portalCompound.getLong(NBT_TO)), portalCompound.getInteger(NBT_TO_DIM));
-                if (to.dimensionId == entity.getEntityWorld().provider.getDimensionId() && to.distanceSq(entity.field_181016_an) <= PORTAL_RANGE_SQR) { // lastPortalPos
+                if (to.dimensionId == entity.getEntityWorld().provider.getDimension() && to.distanceSq(entity.lastPortalPos) <= PORTAL_RANGE_SQR) {
                     int x = MathHelper.floor_double(entity.posX);
                     int y = MathHelper.floor_double(entity.posZ);
                     long key = ChunkCoordIntPair.chunkXZ2Int(x, y);
@@ -91,7 +91,7 @@ public class BetterTeleporter extends Teleporter {
         public final int dimensionId;
 
         public PortalPositionAndDimension(BlockPos pos) {
-            this(pos, world.provider.getDimensionId());
+            this(pos, world.provider.getDimension());
         }
 
         public PortalPositionAndDimension(BlockPos pos, int dimensionId) {
