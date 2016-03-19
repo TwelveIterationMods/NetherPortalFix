@@ -81,9 +81,7 @@ task jarDev(type: Jar) {
 }
 
 artifacts {
-    archives jarAPI
     archives jarDev
-    archives jarJavadoc
 }
 
 uploadArchives {
