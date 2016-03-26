@@ -17,9 +17,9 @@ public class NetherPortalFix {
 
     @SubscribeEvent
     public void onWorldLoad(WorldEvent.Load event) {
-        if(event.world instanceof WorldServer) {
-            if(event.world.provider.getDimension() == 0 || event.world.provider.getDimension() == -1) {
-                ((WorldServer) event.world).worldTeleporter = new BetterTeleporter((WorldServer) event.world);
+        if(event.getWorld() instanceof WorldServer) {
+            if(event.getWorld().provider.getDimension() == 0 || event.getWorld().provider.getDimension() == -1) {
+                ((WorldServer) event.getWorld()).worldTeleporter = new BetterTeleporter((WorldServer) event.getWorld());
             }
         }
     }
