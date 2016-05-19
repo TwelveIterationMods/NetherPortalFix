@@ -5,11 +5,13 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.Constants;
+
+import javax.annotation.Nonnull;
 
 public class BetterTeleporter extends Teleporter {
 
@@ -28,7 +30,7 @@ public class BetterTeleporter extends Teleporter {
     }
 
     @Override
-    public void placeInPortal(Entity entity, float rotationYaw) {
+    public void placeInPortal(@Nonnull Entity entity, float rotationYaw) {
         if(entity instanceof EntityPlayer) {
             PortalPositionAndDimension from = new PortalPositionAndDimension(entity.lastPortalPos);
             super.placeInPortal(entity, rotationYaw);
@@ -66,16 +68,13 @@ public class BetterTeleporter extends Teleporter {
                 if (to.dimensionId == entity.getEntityWorld().provider.getDimension() && to.distanceSq(entity.lastPortalPos) <= PORTAL_RANGE_SQR) {
                     int x = MathHelper.floor_double(entity.posX);
                     int y = MathHelper.floor_double(entity.posZ);
-                    long key = ChunkCoordIntPair.chunkXZ2Int(x, y);
-                    PortalPosition oldValue = destinationCoordinateCache.getValueByKey(key);
+                    long key = ChunkPos.chunkXZ2Int(x, y);
+                    PortalPosition oldValue = destinationCoordinateCache.get(key);
                     PortalPositionAndDimension from = new PortalPositionAndDimension(BlockPos.fromLong(portalCompound.getLong(NBT_FROM)), portalCompound.getInteger(NBT_FROM_DIM));
-                    destinationCoordinateCache.add(key, from);
-                    if(!destinationCoordinateKeys.contains(key)) {
-                        destinationCoordinateKeys.add(key);
-                    }
+                    destinationCoordinateCache.put(key, from);
                     boolean result = super.placeInExistingPortal(entity, rotationYaw);
                     if(oldValue != null) {
-                        destinationCoordinateCache.add(key, oldValue);
+                        destinationCoordinateCache.put(key, oldValue);
                     }
                     tagList.removeTag(i);
                     tagCompound.setTag(NBT_RETURN_PORTALS, tagList);

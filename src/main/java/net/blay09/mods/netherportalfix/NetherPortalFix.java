@@ -7,7 +7,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-@Mod(modid = "netherportalfix", name = "Nether Portal Fix", acceptableRemoteVersions = "*")
+@Mod(modid = "netherportalfix", name = "Nether Portal Fix", acceptableRemoteVersions = "*",
+    updateJSON = "http://balyware.com/new/forge_update.php?modid=netherportalfix")
 public class NetherPortalFix {
 
     @Mod.EventHandler
