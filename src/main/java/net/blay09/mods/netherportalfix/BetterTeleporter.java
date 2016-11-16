@@ -40,7 +40,7 @@ public class BetterTeleporter extends Teleporter {
             for(int i = tagList.tagCount() - 1; i >= 0; i--) {
                 NBTTagCompound portalCompound = tagList.getCompoundTagAt(i);
                 PortalPositionAndDimension testTo = new PortalPositionAndDimension(BlockPos.fromLong(portalCompound.getLong(NBT_TO)), portalCompound.getInteger(NBT_TO_DIM));
-                if(testTo.dimensionId == entity.worldObj.provider.getDimension() && testTo.distanceSq(to) <= PORTAL_RANGE_SQR) {
+                if(testTo.dimensionId == entity.world.provider.getDimension() && testTo.distanceSq(to) <= PORTAL_RANGE_SQR) {
                     tagList.removeTag(i);
                 }
             }
@@ -66,9 +66,9 @@ public class BetterTeleporter extends Teleporter {
                 NBTTagCompound portalCompound = tagList.getCompoundTagAt(i);
                 PortalPositionAndDimension to = new PortalPositionAndDimension(BlockPos.fromLong(portalCompound.getLong(NBT_TO)), portalCompound.getInteger(NBT_TO_DIM));
                 if (to.dimensionId == entity.getEntityWorld().provider.getDimension() && to.distanceSq(entity.lastPortalPos) <= PORTAL_RANGE_SQR) {
-                    int x = MathHelper.floor_double(entity.posX);
-                    int y = MathHelper.floor_double(entity.posZ);
-                    long key = ChunkPos.chunkXZ2Int(x, y);
+                    int x = MathHelper.floor(entity.posX);
+                    int y = MathHelper.floor(entity.posZ);
+                    long key = ChunkPos.asLong(x, y);
                     PortalPosition oldValue = destinationCoordinateCache.get(key);
                     PortalPositionAndDimension from = new PortalPositionAndDimension(BlockPos.fromLong(portalCompound.getLong(NBT_FROM)), portalCompound.getInteger(NBT_FROM_DIM));
                     destinationCoordinateCache.put(key, from);
