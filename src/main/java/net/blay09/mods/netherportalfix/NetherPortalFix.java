@@ -7,7 +7,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-@Mod(modid = "netherportalfix", name = "NetherPortalFix", acceptableRemoteVersions = "*")
+@Mod(modid = "netherportalfix", name = "NetherPortalFix", acceptableRemoteVersions = "*", acceptedMinecraftVersions = "[1.11]")
 public class NetherPortalFix {
 
     @Mod.EventHandler
