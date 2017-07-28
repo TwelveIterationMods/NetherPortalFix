@@ -32,6 +32,7 @@ import javax.annotation.Nullable;
 @Mod(modid = "netherportalfix", name = "NetherPortalFix", acceptableRemoteVersions = "*", acceptedMinecraftVersions = "[1.12]")
 public class NetherPortalFix {
 
+    private static final int MAX_PORTAL_DISTANCE_SQ = 16;
     private static final String NETHER_PORTAL_FIX = "NetherPortalFix";
     private static final String FROM = "From";
     private static final String FROM_DIM = "FromDim";
@@ -61,8 +62,7 @@ public class NetherPortalFix {
                             transferPlayerToDimension((EntityPlayerMP) player, toDim, server.getPlayerList(), toPos);
                             event.setCanceled(true);
                         } else {
-                            player.sendStatusMessage(new TextComponentString("" + player.getEntityWorld().getBlockState(toPos)), false);
-                            player.sendStatusMessage(new TextComponentTranslation(TextFormatting.RED + "Your return portal has been destroyed."), true); // I18n
+                            player.sendStatusMessage(new TextComponentTranslation(TextFormatting.RED + "netherportalfix:portal_destroyed"), true); // I18n
                             removeReturnPortal(portalList, returnPortal);
                         }
                     }
@@ -139,7 +139,7 @@ public class NetherPortalFix {
             NBTTagCompound portal = (NBTTagCompound) entry;
             if(portal.getInteger(FROM_DIM) == triggerDim) {
                 BlockPos portalTrigger = BlockPos.fromLong(portal.getLong(FROM));
-                if (portalTrigger.distanceSq(triggerPos) <= 16) { // TODO const
+                if (portalTrigger.distanceSq(triggerPos) <= MAX_PORTAL_DISTANCE_SQ) {
                     return portal;
                 }
             }
@@ -150,7 +150,7 @@ public class NetherPortalFix {
     private void storeReturnPortal(NBTTagList portalList, BlockPos triggerPos, int triggerDim, BlockPos returnPos) {
         NBTTagCompound found = findReturnPortal(portalList, triggerPos, triggerDim);
         if(found == null) {
-            System.out.println("New connection: " + triggerPos + " => " + returnPos);
+//            System.out.println("New connection: " + triggerPos + " => " + returnPos);
             NBTTagCompound portalCompound = new NBTTagCompound();
             portalCompound.setLong(FROM, triggerPos.toLong());
             portalCompound.setInteger(FROM_DIM, triggerDim);
@@ -158,11 +158,11 @@ public class NetherPortalFix {
             portalList.appendTag(portalCompound);
         } else {
             BlockPos portalReturnPos = BlockPos.fromLong(found.getLong(TO));
-            if(portalReturnPos.distanceSq(returnPos) > 16) { // TODO const
-                System.out.println("Updated connection: " + triggerPos + " => " + returnPos);
+            if(portalReturnPos.distanceSq(returnPos) > MAX_PORTAL_DISTANCE_SQ) {
+//                System.out.println("Updated connection: " + triggerPos + " => " + returnPos);
                 found.setLong(TO, returnPos.toLong());
             } else {
-                System.out.println("Used existing connection.");
+//                System.out.println("Used existing connection.");
             }
         }
     }
