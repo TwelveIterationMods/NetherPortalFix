@@ -13,9 +13,7 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
@@ -62,7 +60,7 @@ public class NetherPortalFix {
                             transferPlayerToDimension((EntityPlayerMP) player, toDim, server.getPlayerList(), toPos);
                             event.setCanceled(true);
                         } else {
-                            player.sendStatusMessage(new TextComponentTranslation(TextFormatting.RED + "netherportalfix:portal_destroyed"), true); // I18n
+                            player.sendStatusMessage(new TextComponentTranslation("netherportalfix:portal_destroyed"), true);
                             removeReturnPortal(portalList, returnPortal);
                         }
                     }
