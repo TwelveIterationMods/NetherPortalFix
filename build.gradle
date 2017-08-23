@@ -26,6 +26,7 @@ archivesBaseName = mod_name + "_" + minecraft_version
 minecraft {
     version = minecraft_version + "-" + forge_version
     runDir = "run"
+    replace '@VERSION@', project.version
     useDepAts = true
     mappings = mappings_version
 }

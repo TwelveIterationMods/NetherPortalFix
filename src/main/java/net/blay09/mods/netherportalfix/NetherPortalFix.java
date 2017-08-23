@@ -27,7 +27,7 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 
 import javax.annotation.Nullable;
 
-@Mod(modid = "netherportalfix", name = "NetherPortalFix", acceptableRemoteVersions = "*", acceptedMinecraftVersions = "[1.12]")
+@Mod(modid = "netherportalfix", name = "NetherPortalFix", version = "@VERSION@", acceptableRemoteVersions = "*", acceptedMinecraftVersions = "[1.12]")
 public class NetherPortalFix {
 
     private static final int MAX_PORTAL_DISTANCE_SQ = 16;

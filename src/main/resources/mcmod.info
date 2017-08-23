@@ -1,0 +1,12 @@
+[{
+  "modid": "netherportalfix",
+  "name": "NetherPortalFix",
+  "description": "Ensures correct destinations when travelling back and forth through Nether Portals in Multiplayer.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "logoFile": "assets/netherportalfix/textures/logo.png",
+  "url": "https://minecraft.curseforge.com/mc-mods/241160/",
+  "updateJSON": "",
+  "authorList": ["BlayTheNinth"],
+  "credits": ""
+}]
