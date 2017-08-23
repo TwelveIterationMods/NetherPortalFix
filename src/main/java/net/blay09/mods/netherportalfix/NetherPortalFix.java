@@ -46,7 +46,7 @@ public class NetherPortalFix {
         if(event.getEntity() instanceof EntityPlayerMP) {
             EntityPlayer player = (EntityPlayer) event.getEntity();
             BlockPos fromPos = player.lastPortalPos;
-            if(player.getPosition().getDistance(fromPos.getX(), fromPos.getY(), fromPos.getZ()) > 2) {
+            if(fromPos == null || player.getPosition().getDistance(fromPos.getX(), fromPos.getY(), fromPos.getZ()) > 2) {
                 player.lastPortalPos = null;
                 return;
             }
