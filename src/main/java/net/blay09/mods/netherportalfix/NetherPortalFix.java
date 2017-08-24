@@ -94,6 +94,7 @@ public class NetherPortalFix {
         oldWorld.profiler.startSection("placing");
         if (entity.isEntityAlive()) {
             entity.setLocationAndAngles(pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, entity.rotationYaw, entity.rotationPitch);
+            entity.fallDistance = 0f;
             newWorld.spawnEntity(entity);
             newWorld.updateEntityWithOptionalForce(entity, false);
         }
