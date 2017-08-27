@@ -45,6 +45,10 @@ public class NetherPortalFix {
 		if(event.getEntity() instanceof EntityPlayerMP) {
 			EntityPlayer player = (EntityPlayer) event.getEntity();
 			BlockPos fromPos = player.lastPortalPos;
+			if (fromPos == null || player.getPosition().getDistance(fromPos.getX(), fromPos.getY(), fromPos.getZ()) > 2) {
+				player.lastPortalPos = null;
+				return;
+			}
 			int fromDim = event.getEntity().dimension;
 			int toDim = event.getDimension();
 			if ((fromDim == 0 && toDim == -1) || (fromDim == -1 && toDim == 0)) {
@@ -73,6 +77,9 @@ public class NetherPortalFix {
 		if((event.fromDim == 0 && event.toDim == -1) || (event.fromDim == -1 && event.toDim == 0)) {
 			EntityPlayer player = event.player;
 			BlockPos fromPos = player.lastPortalPos;
+			if (fromPos == null) {
+				return;
+			}
 			BlockPos toPos = new BlockPos(player.posX, player.posY, player.posZ);
 			NBTTagList portalList = getPlayerPortalList(player);
 			storeReturnPortal(portalList, toPos, event.toDim, fromPos);
@@ -85,7 +92,8 @@ public class NetherPortalFix {
 	private static void transferEntityToWorld(Entity entity, WorldServer oldWorld, WorldServer newWorld, BlockPos pos) {
 		oldWorld.theProfiler.startSection("placing");
 		if (entity.isEntityAlive()) {
-			entity.setLocationAndAngles(pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, entity.rotationYaw, entity.rotationPitch);
+			entity.setLocationAndAngles(pos.getX() + 0.5f, pos.getY(), pos.getZ() + 0.5f, entity.rotationYaw, entity.rotationPitch);
+			entity.fallDistance = 0f;
 			newWorld.spawnEntityInWorld(entity);
 			newWorld.updateEntityWithOptionalForce(entity, false);
 		}
