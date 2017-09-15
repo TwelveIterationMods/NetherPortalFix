@@ -1,6 +1,5 @@
 package net.blay09.mods.netherportalfix;
 
-import com.sun.jna.platform.win32.WinNT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
