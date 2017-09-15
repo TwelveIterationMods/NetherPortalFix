@@ -110,7 +110,7 @@ public class NetherPortalFix {
         WorldServer oldWorld = manager.getServerInstance().getWorld(player.dimension);
         player.dimension = dimension;
         WorldServer newWorld = manager.getServerInstance().getWorld(player.dimension);
-        player.connection.sendPacket(new SPacketRespawn(player.dimension, player.world.getDifficulty(), player.world.getWorldInfo().getTerrainType(), player.interactionManager.getGameType()));
+        player.connection.sendPacket(new SPacketRespawn(player.dimension, newWorld.getDifficulty(), newWorld.getWorldInfo().getTerrainType(), player.interactionManager.getGameType()));
         oldWorld.removeEntityDangerously(player);
         if (player.isBeingRidden()) {
             player.removePassengers();
