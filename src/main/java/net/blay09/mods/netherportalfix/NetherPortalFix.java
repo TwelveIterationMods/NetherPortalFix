@@ -1,5 +1,6 @@
 package net.blay09.mods.netherportalfix;
 
+import com.sun.jna.platform.win32.WinNT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -24,6 +25,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.relauncher.Side;
 
 import javax.annotation.Nullable;
 
@@ -32,9 +35,11 @@ public class NetherPortalFix {
 
     private static final int MAX_PORTAL_DISTANCE_SQ = 16;
     private static final String NETHER_PORTAL_FIX = "NetherPortalFix";
+    private static final String SCHEDULED_TELEPORT = "NPFScheduledTeleport";
     private static final String FROM = "From";
     private static final String FROM_DIM = "FromDim";
     private static final String TO = "To";
+    private static final String TO_DIM = "ToDim";
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
@@ -45,6 +50,9 @@ public class NetherPortalFix {
     public void onEntityTravelToDimension(EntityTravelToDimensionEvent event) {
         if(event.getEntity() instanceof EntityPlayerMP) {
             EntityPlayer player = (EntityPlayer) event.getEntity();
+            if(player.getEntityData().hasKey(SCHEDULED_TELEPORT)) {
+                return;
+            }
             BlockPos fromPos = player.lastPortalPos;
             if(fromPos == null || player.getPosition().getDistance(fromPos.getX(), fromPos.getY(), fromPos.getZ()) > 2) {
                 player.lastPortalPos = null;
@@ -61,7 +69,10 @@ public class NetherPortalFix {
                         World toWorld = server.getWorld(toDim);
                         BlockPos toPos = BlockPos.fromLong(returnPortal.getLong(TO));
                         if (toWorld.getBlockState(toPos).getBlock() == Blocks.PORTAL) {
-                            transferPlayerToDimension((EntityPlayerMP) player, toDim, server.getPlayerList(), toPos);
+                            NBTTagCompound tagCompound = new NBTTagCompound();
+                            tagCompound.setInteger(TO_DIM, toDim);
+                            tagCompound.setLong(TO, toPos.toLong());
+                            player.getEntityData().setTag(SCHEDULED_TELEPORT, tagCompound);
                             event.setCanceled(true);
                         } else {
                             player.sendStatusMessage(new TextComponentTranslation("netherportalfix:portal_destroyed"), true);
@@ -69,6 +80,30 @@ public class NetherPortalFix {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if(event.phase == TickEvent.Phase.END && event.side == Side.SERVER) {
+            NBTTagCompound entityData = event.player.getEntityData();
+            if(entityData.hasKey(SCHEDULED_TELEPORT)) {
+                NBTTagCompound data = entityData.getCompoundTag(SCHEDULED_TELEPORT);
+                int toDim = data.getInteger(TO_DIM);
+
+                // Fire Forge event - our event handler will ignore it due to SCHEDULED_TELEPORT tag. If this is cancelled, do not teleport at all.
+                EntityTravelToDimensionEvent travelEvent = new EntityTravelToDimensionEvent(event.player, toDim);
+                if(MinecraftForge.EVENT_BUS.post(travelEvent)) {
+                    entityData.removeTag(SCHEDULED_TELEPORT);
+                    return;
+                }
+
+                MinecraftServer server = event.player.getEntityWorld().getMinecraftServer();
+                if(server != null) {
+                    transferPlayerToDimension((EntityPlayerMP) event.player, toDim, server.getPlayerList(), BlockPos.fromLong(data.getLong(TO)));
+                }
+                entityData.removeTag(SCHEDULED_TELEPORT);
             }
         }
     }
