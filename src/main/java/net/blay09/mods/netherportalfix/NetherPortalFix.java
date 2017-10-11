@@ -12,6 +12,7 @@ import net.minecraft.network.play.server.SPacketRespawn;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
@@ -52,11 +53,13 @@ public class NetherPortalFix {
             if(player.getEntityData().hasKey(SCHEDULED_TELEPORT)) {
                 return;
             }
+
             BlockPos fromPos = player.lastPortalPos;
             if(fromPos == null || player.getPosition().getDistance(fromPos.getX(), fromPos.getY(), fromPos.getZ()) > 2) {
                 player.lastPortalPos = null;
                 return;
             }
+
             int fromDim = event.getEntity().dimension;
             int toDim = event.getDimension();
             if ((fromDim == 0 && toDim == -1) || (fromDim == -1 && toDim == 0)) {
@@ -67,6 +70,18 @@ public class NetherPortalFix {
                     if(server != null) {
                         World toWorld = server.getWorld(toDim);
                         BlockPos toPos = BlockPos.fromLong(returnPortal.getLong(TO));
+
+                        // Find the lowest possible portal block to prevent any (literal) headaches
+                        BlockPos tryPos;
+                        while(true) {
+                            tryPos = toPos.offset(EnumFacing.DOWN);
+                            if(toWorld.getBlockState(tryPos).getBlock() == Blocks.PORTAL) {
+                                toPos = tryPos;
+                            } else {
+                                break;
+                            }
+                        }
+
                         if (toWorld.getBlockState(toPos).getBlock() == Blocks.PORTAL) {
                             NBTTagCompound tagCompound = new NBTTagCompound();
                             tagCompound.setInteger(TO_DIM, toDim);
@@ -140,6 +155,7 @@ public class NetherPortalFix {
      *  Taken from CoFHCore's EntityHelper (https://github.com/CoFH/CoFHCore/blob/1.12/src/main/java/cofh/core/util/helpers/EntityHelper.java) under "Don't Be a Jerk" License
      */
     private static void transferPlayerToDimension(EntityPlayerMP player, int dimension, PlayerList manager, BlockPos pos) {
+        player.invulnerableDimensionChange = true;
         int oldDim = player.dimension;
         WorldServer oldWorld = manager.getServerInstance().getWorld(player.dimension);
         player.dimension = dimension;
