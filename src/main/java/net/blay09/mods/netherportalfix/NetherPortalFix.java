@@ -89,7 +89,6 @@ public class NetherPortalFix {
                             tagCompound.setLong(TO, toPos.toLong());
                             player.getEntityData().setTag(SCHEDULED_TELEPORT, tagCompound);
                             event.setCanceled(true);
-                            ((EntityPlayerMP) player).connection.func_194028_b(new TextComponentString("kicked")); // TODO debug code
                         } else {
                             player.sendStatusMessage(new TextComponentTranslation("netherportalfix:portal_destroyed"), true);
                             removeReturnPortal(portalList, returnPortal);
