@@ -14,6 +14,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -48,14 +49,14 @@ public class NetherPortalFix {
 
     @SubscribeEvent
     public void onEntityTravelToDimension(EntityTravelToDimensionEvent event) {
-        if(event.getEntity() instanceof EntityPlayerMP) {
+        if (event.getEntity() instanceof EntityPlayerMP) {
             EntityPlayer player = (EntityPlayer) event.getEntity();
-            if(player.getEntityData().hasKey(SCHEDULED_TELEPORT)) {
+            if (player.getEntityData().hasKey(SCHEDULED_TELEPORT)) {
                 return;
             }
 
             BlockPos fromPos = player.lastPortalPos;
-            if(fromPos == null || player.getPosition().getDistance(fromPos.getX(), fromPos.getY(), fromPos.getZ()) > 2) {
+            if (fromPos == null || player.getPosition().getDistance(fromPos.getX(), fromPos.getY(), fromPos.getZ()) > 2) {
                 player.lastPortalPos = null;
                 return;
             }
@@ -65,17 +66,17 @@ public class NetherPortalFix {
             if ((fromDim == 0 && toDim == -1) || (fromDim == -1 && toDim == 0)) {
                 NBTTagList portalList = getPlayerPortalList(player);
                 NBTTagCompound returnPortal = findReturnPortal(portalList, fromPos, fromDim);
-                if(returnPortal != null) {
+                if (returnPortal != null) {
                     MinecraftServer server = player.getEntityWorld().getMinecraftServer();
-                    if(server != null) {
+                    if (server != null) {
                         World toWorld = server.getWorld(toDim);
                         BlockPos toPos = BlockPos.fromLong(returnPortal.getLong(TO));
 
                         // Find the lowest possible portal block to prevent any (literal) headaches
                         BlockPos tryPos;
-                        while(true) {
+                        while (true) {
                             tryPos = toPos.offset(EnumFacing.DOWN);
-                            if(toWorld.getBlockState(tryPos).getBlock() == Blocks.PORTAL) {
+                            if (toWorld.getBlockState(tryPos).getBlock() == Blocks.PORTAL) {
                                 toPos = tryPos;
                             } else {
                                 break;
@@ -88,6 +89,7 @@ public class NetherPortalFix {
                             tagCompound.setLong(TO, toPos.toLong());
                             player.getEntityData().setTag(SCHEDULED_TELEPORT, tagCompound);
                             event.setCanceled(true);
+                            ((EntityPlayerMP) player).connection.func_194028_b(new TextComponentString("kicked")); // TODO debug code
                         } else {
                             player.sendStatusMessage(new TextComponentTranslation("netherportalfix:portal_destroyed"), true);
                             removeReturnPortal(portalList, returnPortal);
@@ -100,23 +102,24 @@ public class NetherPortalFix {
 
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if(event.phase == TickEvent.Phase.END && event.side == Side.SERVER) {
+        if (event.phase == TickEvent.Phase.END && event.side == Side.SERVER) {
             NBTTagCompound entityData = event.player.getEntityData();
-            if(entityData.hasKey(SCHEDULED_TELEPORT)) {
+            if (entityData.hasKey(SCHEDULED_TELEPORT)) {
                 NBTTagCompound data = entityData.getCompoundTag(SCHEDULED_TELEPORT);
                 int toDim = data.getInteger(TO_DIM);
 
                 // Fire Forge event - our event handler will ignore it due to SCHEDULED_TELEPORT tag. If this is cancelled, do not teleport at all.
                 EntityTravelToDimensionEvent travelEvent = new EntityTravelToDimensionEvent(event.player, toDim);
-                if(MinecraftForge.EVENT_BUS.post(travelEvent)) {
+                if (MinecraftForge.EVENT_BUS.post(travelEvent)) {
                     entityData.removeTag(SCHEDULED_TELEPORT);
                     return;
                 }
 
                 MinecraftServer server = event.player.getEntityWorld().getMinecraftServer();
-                if(server != null) {
+                if (server != null) {
                     transferPlayerToDimension((EntityPlayerMP) event.player, toDim, server.getPlayerList(), BlockPos.fromLong(data.getLong(TO)));
                 }
+
                 entityData.removeTag(SCHEDULED_TELEPORT);
             }
         }
@@ -124,12 +127,13 @@ public class NetherPortalFix {
 
     @SubscribeEvent
     public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-        if((event.fromDim == 0 && event.toDim == -1) || (event.fromDim == -1 && event.toDim == 0)) {
+        if ((event.fromDim == 0 && event.toDim == -1) || (event.fromDim == -1 && event.toDim == 0)) {
             EntityPlayer player = event.player;
             BlockPos fromPos = player.lastPortalPos;
-            if(fromPos == null) {
+            if (fromPos == null) {
                 return;
             }
+
             BlockPos toPos = new BlockPos(player.posX, player.posY, player.posZ);
             NBTTagList portalList = getPlayerPortalList(player);
             storeReturnPortal(portalList, toPos, event.toDim, fromPos);
@@ -137,7 +141,7 @@ public class NetherPortalFix {
     }
 
     /**
-     *  Taken from CoFHCore's EntityHelper (https://github.com/CoFH/CoFHCore/blob/1.12/src/main/java/cofh/core/util/helpers/EntityHelper.java) under "Don't Be a Jerk" License
+     * Taken from CoFHCore's EntityHelper (https://github.com/CoFH/CoFHCore/blob/1.12/src/main/java/cofh/core/util/helpers/EntityHelper.java) under "Don't Be a Jerk" License
      */
     private static void transferEntityToWorld(Entity entity, WorldServer oldWorld, WorldServer newWorld, BlockPos pos) {
         oldWorld.profiler.startSection("placing");
@@ -147,12 +151,13 @@ public class NetherPortalFix {
             newWorld.spawnEntity(entity);
             newWorld.updateEntityWithOptionalForce(entity, false);
         }
+
         oldWorld.profiler.endSection();
         entity.setWorld(newWorld);
     }
 
     /**
-     *  Taken from CoFHCore's EntityHelper (https://github.com/CoFH/CoFHCore/blob/1.12/src/main/java/cofh/core/util/helpers/EntityHelper.java) under "Don't Be a Jerk" License
+     * Taken from CoFHCore's EntityHelper (https://github.com/CoFH/CoFHCore/blob/1.12/src/main/java/cofh/core/util/helpers/EntityHelper.java) under "Don't Be a Jerk" License
      */
     private static void transferPlayerToDimension(EntityPlayerMP player, int dimension, PlayerList manager, BlockPos pos) {
         player.invulnerableDimensionChange = true;
@@ -165,9 +170,11 @@ public class NetherPortalFix {
         if (player.isBeingRidden()) {
             player.removePassengers();
         }
+
         if (player.isRiding()) {
             player.dismountRidingEntity();
         }
+
         player.isDead = false;
         transferEntityToWorld(player, oldWorld, newWorld, pos);
         manager.preparePlayer(player, oldWorld);
@@ -175,10 +182,17 @@ public class NetherPortalFix {
         player.interactionManager.setWorld(newWorld);
         manager.updateTimeAndWeatherForPlayer(player, newWorld);
         manager.syncPlayerInventory(player);
+
         for (PotionEffect potioneffect : player.getActivePotionEffects()) {
             player.connection.sendPacket(new SPacketEntityEffect(player.getEntityId(), potioneffect));
         }
+
         FMLCommonHandler.instance().firePlayerChangedDimensionEvent(player, oldDim, dimension);
+
+        // We need to capture the current position in case the player disconnected during the teleport,
+        // else they will only change dimension, but remain on previous coordinates.
+        // See NetHandlerPlayServer.update() - our tick runs in between the capture call and the position reset.
+        player.connection.captureCurrentPosition();
     }
 
     private NBTTagList getPlayerPortalList(EntityPlayer player) {
@@ -191,22 +205,22 @@ public class NetherPortalFix {
 
     @Nullable
     private NBTTagCompound findReturnPortal(NBTTagList portalList, BlockPos triggerPos, int triggerDim) {
-        for(NBTBase entry : portalList) {
+        for (NBTBase entry : portalList) {
             NBTTagCompound portal = (NBTTagCompound) entry;
-            if(portal.getInteger(FROM_DIM) == triggerDim) {
+            if (portal.getInteger(FROM_DIM) == triggerDim) {
                 BlockPos portalTrigger = BlockPos.fromLong(portal.getLong(FROM));
                 if (portalTrigger.distanceSq(triggerPos) <= MAX_PORTAL_DISTANCE_SQ) {
                     return portal;
                 }
             }
         }
+
         return null;
     }
 
     private void storeReturnPortal(NBTTagList portalList, BlockPos triggerPos, int triggerDim, BlockPos returnPos) {
         NBTTagCompound found = findReturnPortal(portalList, triggerPos, triggerDim);
-        if(found == null) {
-//            System.out.println("New connection: " + triggerPos + " => " + returnPos);
+        if (found == null) {
             NBTTagCompound portalCompound = new NBTTagCompound();
             portalCompound.setLong(FROM, triggerPos.toLong());
             portalCompound.setInteger(FROM_DIM, triggerDim);
@@ -214,18 +228,15 @@ public class NetherPortalFix {
             portalList.appendTag(portalCompound);
         } else {
             BlockPos portalReturnPos = BlockPos.fromLong(found.getLong(TO));
-            if(portalReturnPos.distanceSq(returnPos) > MAX_PORTAL_DISTANCE_SQ) {
-//                System.out.println("Updated connection: " + triggerPos + " => " + returnPos);
+            if (portalReturnPos.distanceSq(returnPos) > MAX_PORTAL_DISTANCE_SQ) {
                 found.setLong(TO, returnPos.toLong());
-            } else {
-//                System.out.println("Used existing connection.");
             }
         }
     }
 
     private void removeReturnPortal(NBTTagList portalList, NBTTagCompound portal) {
-        for(int i = 0; i < portalList.tagCount(); i++) {
-            if(portalList.get(i) == portal) {
+        for (int i = 0; i < portalList.tagCount(); i++) {
+            if (portalList.get(i) == portal) {
                 portalList.removeTag(i);
                 break;
             }
