@@ -1,0 +1,13 @@
+modLoader="javafml"
+loaderVersion="[24,)"
+issueTrackerURL="https://github.com/blay09/NetherPortalfix/issues"
+displayURL="https://minecraft.curseforge.com/projects/netherportalfix"
+authors="BlayTheNinth"
+
+[[mods]]
+modId="netherportalfix"
+version="${file.jarVersion}"
+displayName="NetherPortalFix"
+description='''
+Ensures correct destinations when travelling back and forth through Nether Portals in Multiplayer.
+'''
