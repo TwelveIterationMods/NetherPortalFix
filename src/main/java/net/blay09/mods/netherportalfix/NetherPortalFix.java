@@ -1,16 +1,16 @@
 package net.blay09.mods.netherportalfix;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.INBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.MinecraftForge;
@@ -41,14 +41,14 @@ public class NetherPortalFix {
 
     @SubscribeEvent
     public void onEntityTravelToDimension(EntityTravelToDimensionEvent event) {
-        if (event.getEntity() instanceof EntityPlayerMP) {
-            EntityPlayer player = (EntityPlayer) event.getEntity();
-            if (player.getEntityData().hasKey(SCHEDULED_TELEPORT)) {
+        if (event.getEntity() instanceof ServerPlayerEntity) {
+            PlayerEntity player = (PlayerEntity) event.getEntity();
+            if (player.getEntityData().contains(SCHEDULED_TELEPORT)) {
                 return;
             }
 
             BlockPos fromPos = player.lastPortalPos;
-            if (fromPos == null || player.getPosition().getDistance(fromPos.getX(), fromPos.getY(), fromPos.getZ()) > 2) {
+            if (fromPos == null || player.getPosition().distanceSq(fromPos) > 2) {
                 player.lastPortalPos = null;
                 return;
             }
@@ -56,8 +56,8 @@ public class NetherPortalFix {
             DimensionType fromDim = event.getEntity().dimension;
             DimensionType toDim = event.getDimension();
             if ((fromDim == DimensionType.OVERWORLD && toDim == DimensionType.NETHER) || (fromDim == DimensionType.NETHER && toDim == DimensionType.OVERWORLD)) {
-                NBTTagList portalList = getPlayerPortalList(player);
-                NBTTagCompound returnPortal = findReturnPortal(portalList, fromPos, fromDim);
+                ListNBT portalList = getPlayerPortalList(player);
+                CompoundNBT returnPortal = findReturnPortal(portalList, fromPos, fromDim);
                 if (returnPortal != null) {
                     MinecraftServer server = player.getEntityWorld().getServer();
                     if (server != null) {
@@ -67,7 +67,7 @@ public class NetherPortalFix {
                         // Find the lowest possible portal block to prevent any (literal) headaches
                         BlockPos tryPos;
                         while (true) {
-                            tryPos = toPos.offset(EnumFacing.DOWN);
+                            tryPos = toPos.offset(Direction.DOWN);
                             if (toWorld.getBlockState(tryPos).getBlock() == Blocks.NETHER_PORTAL) {
                                 toPos = tryPos;
                             } else {
@@ -76,16 +76,16 @@ public class NetherPortalFix {
                         }
 
                         if (toWorld.getBlockState(toPos).getBlock() == Blocks.NETHER_PORTAL) {
-                            NBTTagCompound tagCompound = new NBTTagCompound();
+                            CompoundNBT tagCompound = new CompoundNBT();
 
-                            ResourceLocation dimensionRegistryName = DimensionType.func_212678_a(toDim);
-                            tagCompound.setString(TO_DIM, String.valueOf(dimensionRegistryName));
+                            ResourceLocation dimensionRegistryName = DimensionType.getKey(toDim);
+                            tagCompound.putString(TO_DIM, String.valueOf(dimensionRegistryName));
 
-                            tagCompound.setLong(TO, toPos.toLong());
-                            player.getEntityData().setTag(SCHEDULED_TELEPORT, tagCompound);
+                            tagCompound.putLong(TO, toPos.toLong());
+                            player.getEntityData().put(SCHEDULED_TELEPORT, tagCompound);
                             event.setCanceled(true);
                         } else {
-                            player.sendStatusMessage(new TextComponentTranslation("netherportalfix:portal_destroyed"), true);
+                            player.sendStatusMessage(new TranslationTextComponent("netherportalfix:portal_destroyed"), true);
                             removeReturnPortal(portalList, returnPortal);
                         }
                     }
@@ -97,9 +97,9 @@ public class NetherPortalFix {
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase == TickEvent.Phase.END && event.side == LogicalSide.SERVER) {
-            NBTTagCompound entityData = event.player.getEntityData();
-            if (entityData.hasKey(SCHEDULED_TELEPORT)) {
-                NBTTagCompound data = entityData.getCompound(SCHEDULED_TELEPORT);
+            CompoundNBT entityData = event.player.getEntityData();
+            if (entityData.contains(SCHEDULED_TELEPORT)) {
+                CompoundNBT data = entityData.getCompound(SCHEDULED_TELEPORT);
                 DimensionType toDim = DimensionType.byName(new ResourceLocation(data.getString(TO_DIM)));
                 if (toDim == null) {
                     toDim = DimensionType.OVERWORLD;
@@ -108,11 +108,11 @@ public class NetherPortalFix {
                 // Fire Forge event - our event handler will ignore it due to SCHEDULED_TELEPORT tag. If this is cancelled, do not teleport at all.
                 EntityTravelToDimensionEvent travelEvent = new EntityTravelToDimensionEvent(event.player, toDim);
                 if (MinecraftForge.EVENT_BUS.post(travelEvent)) {
-                    entityData.removeTag(SCHEDULED_TELEPORT);
+                    entityData.remove(SCHEDULED_TELEPORT);
                     return;
                 }
 
-                entityData.removeTag(SCHEDULED_TELEPORT);
+                entityData.remove(SCHEDULED_TELEPORT);
 
                 MinecraftServer server = event.player.getEntityWorld().getServer();
                 if (server != null) {
@@ -126,30 +126,30 @@ public class NetherPortalFix {
     @SubscribeEvent
     public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if ((event.getFrom() == DimensionType.OVERWORLD && event.getTo() == DimensionType.NETHER) || (event.getFrom() == DimensionType.NETHER && event.getTo() == DimensionType.OVERWORLD)) {
-            EntityPlayer player = event.getPlayer();
+            PlayerEntity player = event.getPlayer();
             BlockPos fromPos = player.lastPortalPos;
             if (fromPos == null) {
                 return;
             }
 
             BlockPos toPos = new BlockPos(player.posX, player.posY, player.posZ);
-            NBTTagList portalList = getPlayerPortalList(player);
+            ListNBT portalList = getPlayerPortalList(player);
             storeReturnPortal(portalList, toPos, event.getTo(), fromPos);
         }
     }
 
-    private NBTTagList getPlayerPortalList(EntityPlayer player) {
-        NBTTagCompound data = player.getEntityData().getCompound(EntityPlayer.PERSISTED_NBT_TAG);
-        NBTTagList list = data.getList(NETHER_PORTAL_FIX, Constants.NBT.TAG_COMPOUND);
-        data.setTag(NETHER_PORTAL_FIX, list);
-        player.getEntityData().setTag(EntityPlayer.PERSISTED_NBT_TAG, data);
+    private ListNBT getPlayerPortalList(PlayerEntity player) {
+        CompoundNBT data = player.getEntityData().getCompound(PlayerEntity.PERSISTED_NBT_TAG);
+        ListNBT list = data.getList(NETHER_PORTAL_FIX, Constants.NBT.TAG_COMPOUND);
+        data.put(NETHER_PORTAL_FIX, list);
+        player.getEntityData().put(PlayerEntity.PERSISTED_NBT_TAG, data);
         return list;
     }
 
     @Nullable
-    private NBTTagCompound findReturnPortal(NBTTagList portalList, BlockPos triggerPos, DimensionType triggerDim) {
-        for (INBTBase entry : portalList) {
-            NBTTagCompound portal = (NBTTagCompound) entry;
+    private CompoundNBT findReturnPortal(ListNBT portalList, BlockPos triggerPos, DimensionType triggerDim) {
+        for (INBT entry : portalList) {
+            CompoundNBT portal = (CompoundNBT) entry;
             DimensionType fromDim = DimensionType.byName(new ResourceLocation(portal.getString(FROM_DIM)));
             if (fromDim == triggerDim) {
                 BlockPos portalTrigger = BlockPos.fromLong(portal.getLong(FROM));
@@ -162,30 +162,30 @@ public class NetherPortalFix {
         return null;
     }
 
-    private void storeReturnPortal(NBTTagList portalList, BlockPos triggerPos, DimensionType triggerDim, BlockPos returnPos) {
-        NBTTagCompound found = findReturnPortal(portalList, triggerPos, triggerDim);
+    private void storeReturnPortal(ListNBT portalList, BlockPos triggerPos, DimensionType triggerDim, BlockPos returnPos) {
+        CompoundNBT found = findReturnPortal(portalList, triggerPos, triggerDim);
         if (found == null) {
-            NBTTagCompound portalCompound = new NBTTagCompound();
-            portalCompound.setLong(FROM, triggerPos.toLong());
+            CompoundNBT portalCompound = new CompoundNBT();
+            portalCompound.putLong(FROM, triggerPos.toLong());
 
             // getRegistryName returns null for Vanilla dimensions, so we need to use this instead
-            ResourceLocation dimensionRegistryName = DimensionType.func_212678_a(triggerDim);
-            portalCompound.setString(FROM_DIM, String.valueOf(dimensionRegistryName));
+            ResourceLocation dimensionRegistryName = DimensionType.getKey(triggerDim);
+            portalCompound.putString(FROM_DIM, String.valueOf(dimensionRegistryName));
 
-            portalCompound.setLong(TO, returnPos.toLong());
+            portalCompound.putLong(TO, returnPos.toLong());
             portalList.add(portalCompound);
         } else {
             BlockPos portalReturnPos = BlockPos.fromLong(found.getLong(TO));
             if (portalReturnPos.distanceSq(returnPos) > MAX_PORTAL_DISTANCE_SQ) {
-                found.setLong(TO, returnPos.toLong());
+                found.putLong(TO, returnPos.toLong());
             }
         }
     }
 
-    private void removeReturnPortal(NBTTagList portalList, NBTTagCompound portal) {
+    private void removeReturnPortal(ListNBT portalList, CompoundNBT portal) {
         for (int i = 0; i < portalList.size(); i++) {
             if (portalList.get(i) == portal) {
-                portalList.removeTag(i);
+                portalList.remove(i);
                 break;
             }
         }
