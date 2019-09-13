@@ -15,12 +15,12 @@ import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import javax.annotation.Nullable;
 
@@ -43,7 +43,7 @@ public class NetherPortalFix {
     public void onEntityTravelToDimension(EntityTravelToDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayerEntity) {
             PlayerEntity player = (PlayerEntity) event.getEntity();
-            if (player.getEntityData().contains(SCHEDULED_TELEPORT)) {
+            if (player.getPersistentData().contains(SCHEDULED_TELEPORT)) {
                 return;
             }
 
@@ -55,7 +55,7 @@ public class NetherPortalFix {
 
             DimensionType fromDim = event.getEntity().dimension;
             DimensionType toDim = event.getDimension();
-            if ((fromDim == DimensionType.OVERWORLD && toDim == DimensionType.NETHER) || (fromDim == DimensionType.NETHER && toDim == DimensionType.OVERWORLD)) {
+            if ((fromDim == DimensionType.OVERWORLD && toDim == DimensionType.THE_NETHER) || (fromDim == DimensionType.THE_NETHER && toDim == DimensionType.OVERWORLD)) {
                 ListNBT portalList = getPlayerPortalList(player);
                 CompoundNBT returnPortal = findReturnPortal(portalList, fromPos, fromDim);
                 if (returnPortal != null) {
@@ -82,7 +82,7 @@ public class NetherPortalFix {
                             tagCompound.putString(TO_DIM, String.valueOf(dimensionRegistryName));
 
                             tagCompound.putLong(TO, toPos.toLong());
-                            player.getEntityData().put(SCHEDULED_TELEPORT, tagCompound);
+                            player.getPersistentData().put(SCHEDULED_TELEPORT, tagCompound);
                             event.setCanceled(true);
                         } else {
                             player.sendStatusMessage(new TranslationTextComponent("netherportalfix:portal_destroyed"), true);
@@ -97,7 +97,7 @@ public class NetherPortalFix {
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase == TickEvent.Phase.END && event.side == LogicalSide.SERVER) {
-            CompoundNBT entityData = event.player.getEntityData();
+            CompoundNBT entityData = event.player.getPersistentData();
             if (entityData.contains(SCHEDULED_TELEPORT)) {
                 CompoundNBT data = entityData.getCompound(SCHEDULED_TELEPORT);
                 DimensionType toDim = DimensionType.byName(new ResourceLocation(data.getString(TO_DIM)));
@@ -125,7 +125,7 @@ public class NetherPortalFix {
 
     @SubscribeEvent
     public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-        if ((event.getFrom() == DimensionType.OVERWORLD && event.getTo() == DimensionType.NETHER) || (event.getFrom() == DimensionType.NETHER && event.getTo() == DimensionType.OVERWORLD)) {
+        if ((event.getFrom() == DimensionType.OVERWORLD && event.getTo() == DimensionType.THE_NETHER) || (event.getFrom() == DimensionType.THE_NETHER && event.getTo() == DimensionType.OVERWORLD)) {
             PlayerEntity player = event.getPlayer();
             BlockPos fromPos = player.lastPortalPos;
             if (fromPos == null) {
@@ -139,10 +139,10 @@ public class NetherPortalFix {
     }
 
     private ListNBT getPlayerPortalList(PlayerEntity player) {
-        CompoundNBT data = player.getEntityData().getCompound(PlayerEntity.PERSISTED_NBT_TAG);
+        CompoundNBT data = player.getPersistentData().getCompound(PlayerEntity.PERSISTED_NBT_TAG);
         ListNBT list = data.getList(NETHER_PORTAL_FIX, Constants.NBT.TAG_COMPOUND);
         data.put(NETHER_PORTAL_FIX, list);
-        player.getEntityData().put(PlayerEntity.PERSISTED_NBT_TAG, data);
+        player.getPersistentData().put(PlayerEntity.PERSISTED_NBT_TAG, data);
         return list;
     }
 
