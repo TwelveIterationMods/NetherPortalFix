@@ -13,6 +13,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.TickEvent;
@@ -116,8 +117,9 @@ public class NetherPortalFix {
 
                 MinecraftServer server = event.player.getEntityWorld().getServer();
                 if (server != null) {
-                    NetherPortalFixTeleporter teleporter = new NetherPortalFixTeleporter(BlockPos.fromLong(data.getLong(TO)), toDim);
-                    teleporter.teleport(event.player);
+                    BlockPos pos = BlockPos.fromLong(data.getLong(TO));
+                    ServerWorld toWorld = server.getWorld(toDim);
+                    ((ServerPlayerEntity) event.player).teleport(toWorld, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, event.player.rotationYaw, event.player.rotationPitch);
                 }
             }
         }
