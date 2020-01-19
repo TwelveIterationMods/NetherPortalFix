@@ -19,14 +19,19 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 
 @Mod("netherportalfix")
 public class NetherPortalFix {
+
+    private static final Logger logger = LogManager.getLogger();
 
     private static final int MAX_PORTAL_DISTANCE_SQ = 16;
     private static final String NETHER_PORTAL_FIX = "NetherPortalFix";
@@ -40,20 +45,16 @@ public class NetherPortalFix {
         MinecraftForge.EVENT_BUS.register(this);
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGH)
     public void onEntityTravelToDimension(EntityTravelToDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayerEntity) {
             PlayerEntity player = (PlayerEntity) event.getEntity();
             if (player.getPersistentData().contains(SCHEDULED_TELEPORT)) {
+                logger.debug("Skipping EntityTravelToDimensionEvent as we triggered it");
                 return;
             }
 
-            BlockPos fromPos = player.lastPortalPos;
-            if (fromPos == null || player.getPosition().distanceSq(fromPos) > 2) {
-                player.lastPortalPos = null;
-                return;
-            }
-
+            BlockPos fromPos = player.prevBlockpos;
             DimensionType fromDim = event.getEntity().dimension;
             DimensionType toDim = event.getDimension();
             if ((fromDim == DimensionType.OVERWORLD && toDim == DimensionType.THE_NETHER) || (fromDim == DimensionType.THE_NETHER && toDim == DimensionType.OVERWORLD)) {
@@ -84,12 +85,15 @@ public class NetherPortalFix {
 
                             tagCompound.putLong(TO, toPos.toLong());
                             player.getPersistentData().put(SCHEDULED_TELEPORT, tagCompound);
+                            logger.debug("Found return portal, scheduling teleport");
                             event.setCanceled(true);
                         } else {
                             player.sendStatusMessage(new TranslationTextComponent("netherportalfix:portal_destroyed"), true);
                             removeReturnPortal(portalList, returnPortal);
                         }
                     }
+                } else {
+                    logger.debug("No return portal found");
                 }
             }
         }
@@ -106,21 +110,14 @@ public class NetherPortalFix {
                     toDim = DimensionType.OVERWORLD;
                 }
 
-                // Fire Forge event - our event handler will ignore it due to SCHEDULED_TELEPORT tag. If this is cancelled, do not teleport at all.
-                EntityTravelToDimensionEvent travelEvent = new EntityTravelToDimensionEvent(event.player, toDim);
-                if (MinecraftForge.EVENT_BUS.post(travelEvent)) {
-                    entityData.remove(SCHEDULED_TELEPORT);
-                    return;
-                }
-
-                entityData.remove(SCHEDULED_TELEPORT);
-
                 MinecraftServer server = event.player.getEntityWorld().getServer();
                 if (server != null) {
                     BlockPos pos = BlockPos.fromLong(data.getLong(TO));
                     ServerWorld toWorld = server.getWorld(toDim);
                     ((ServerPlayerEntity) event.player).teleport(toWorld, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, event.player.rotationYaw, event.player.rotationPitch);
                 }
+
+                entityData.remove(SCHEDULED_TELEPORT);
             }
         }
     }
@@ -129,14 +126,17 @@ public class NetherPortalFix {
     public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if ((event.getFrom() == DimensionType.OVERWORLD && event.getTo() == DimensionType.THE_NETHER) || (event.getFrom() == DimensionType.THE_NETHER && event.getTo() == DimensionType.OVERWORLD)) {
             PlayerEntity player = event.getPlayer();
-            BlockPos fromPos = player.lastPortalPos;
-            if (fromPos == null) {
-                return;
+            BlockPos fromPos = player.prevBlockpos;
+            BlockPos toPos = player.getPosition();
+            if (player.world.getBlockState(toPos).getBlock() == Blocks.NETHER_PORTAL) {
+                ListNBT portalList = getPlayerPortalList(player);
+                storeReturnPortal(portalList, toPos, event.getTo(), fromPos);
+                logger.debug("Storing return portal from " + event.getTo() + " to " + toPos + " in " + event.getFrom());
+            } else {
+                logger.debug("Not storing return portal because I'm not in a portal.");
             }
-
-            BlockPos toPos = new BlockPos(player.posX, player.posY, player.posZ);
-            ListNBT portalList = getPlayerPortalList(player);
-            storeReturnPortal(portalList, toPos, event.getTo(), fromPos);
+        } else {
+            logger.debug("Not storing return portal because it's from " + event.getFrom() + " to " + event.getTo());
         }
     }
 
