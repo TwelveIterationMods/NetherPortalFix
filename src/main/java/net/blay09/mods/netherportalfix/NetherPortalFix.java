@@ -126,18 +126,36 @@ public class NetherPortalFix {
     public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if ((event.getFrom() == DimensionType.OVERWORLD && event.getTo() == DimensionType.THE_NETHER) || (event.getFrom() == DimensionType.THE_NETHER && event.getTo() == DimensionType.OVERWORLD)) {
             PlayerEntity player = event.getPlayer();
-            BlockPos fromPos = player.prevBlockpos;
+            BlockPos fromPos = findPortalAt(player, event.getFrom(), player.prevBlockpos);
             BlockPos toPos = player.getPosition();
-            if (player.world.getBlockState(toPos).getBlock() == Blocks.NETHER_PORTAL) {
+            if (fromPos != null) {
                 ListNBT portalList = getPlayerPortalList(player);
                 storeReturnPortal(portalList, toPos, event.getTo(), fromPos);
-                logger.debug("Storing return portal from " + event.getTo() + " to " + toPos + " in " + event.getFrom());
+                logger.debug("Storing return portal from " + event.getTo() + " to " + fromPos + " in " + event.getFrom());
             } else {
                 logger.debug("Not storing return portal because I'm not in a portal.");
             }
         } else {
             logger.debug("Not storing return portal because it's from " + event.getFrom() + " to " + event.getTo());
         }
+    }
+
+    private BlockPos findPortalAt(PlayerEntity player, DimensionType dimensionType, BlockPos pos) {
+        MinecraftServer server = player.world.getServer();
+        if (server != null) {
+            ServerWorld fromWorld = server.getWorld(dimensionType);
+            if (fromWorld.getBlockState(pos).getBlock() == Blocks.NETHER_PORTAL) {
+                return pos;
+            }
+
+            for (Direction value : Direction.values()) {
+                BlockPos offsetPos = pos.offset(value);
+                if (fromWorld.getBlockState(offsetPos).getBlock() == Blocks.NETHER_PORTAL) {
+                    return offsetPos;
+                }
+            }
+        }
+        return null;
     }
 
     private ListNBT getPlayerPortalList(PlayerEntity player) {
