@@ -115,6 +115,7 @@ public class NetherPortalFix {
                     BlockPos pos = BlockPos.fromLong(data.getLong(TO));
                     ServerWorld toWorld = server.getWorld(toDim);
                     ((ServerPlayerEntity) event.player).teleport(toWorld, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, event.player.rotationYaw, event.player.rotationPitch);
+                    event.player.inPortal = false;
                 }
 
                 entityData.remove(SCHEDULED_TELEPORT);
