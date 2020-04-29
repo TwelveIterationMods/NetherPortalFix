@@ -59,7 +59,10 @@ public class NetherPortalFix {
             BlockPos fromPos = player.prevBlockpos;
             DimensionType fromDim = event.getEntity().dimension;
             DimensionType toDim = event.getDimension();
-            if ((fromDim == DimensionType.OVERWORLD && toDim == DimensionType.THE_NETHER) || (fromDim == DimensionType.THE_NETHER && toDim == DimensionType.OVERWORLD)) {
+            boolean isPlayerCurrentlyInPortal = player.inPortal;
+            boolean isTeleportBetweenNetherAndOverworld = (fromDim == DimensionType.OVERWORLD && toDim == DimensionType.THE_NETHER)
+                    || (fromDim == DimensionType.THE_NETHER && toDim == DimensionType.OVERWORLD);
+            if (isPlayerCurrentlyInPortal && isTeleportBetweenNetherAndOverworld) {
                 ListNBT portalList = getPlayerPortalList(player);
                 CompoundNBT returnPortal = findReturnPortal(portalList, fromPos, fromDim);
                 if (returnPortal != null) {
@@ -79,7 +82,8 @@ public class NetherPortalFix {
                             }
                         }
 
-                        if (toWorld.getBlockState(toPos).getBlock() == Blocks.NETHER_PORTAL) {
+                        boolean foundNetherPortalAtTargetLocation = toWorld.getBlockState(toPos).getBlock() == Blocks.NETHER_PORTAL;
+                        if (foundNetherPortalAtTargetLocation) {
                             CompoundNBT tagCompound = new CompoundNBT();
 
                             ResourceLocation dimensionRegistryName = DimensionType.getKey(toDim);
@@ -116,7 +120,7 @@ public class NetherPortalFix {
                 if (server != null) {
                     BlockPos pos = BlockPos.fromLong(data.getLong(TO));
                     ServerWorld toWorld = server.getWorld(toDim);
-                    teleport( ((ServerPlayerEntity) event.player), pos, toWorld );
+                    teleport(((ServerPlayerEntity) event.player), pos, toWorld);
                     event.player.inPortal = false;
                 }
 
@@ -125,12 +129,12 @@ public class NetherPortalFix {
         }
     }
 
-    private void teleport( ServerPlayerEntity player, BlockPos pos, ServerWorld toWorld ) {
-        player.teleport( toWorld, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, player.rotationYaw, player.rotationPitch );
+    private void teleport(ServerPlayerEntity player, BlockPos pos, ServerWorld toWorld) {
+        player.teleport(toWorld, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, player.rotationYaw, player.rotationPitch);
 
         // Resync some things that Vanilla is missing:
-        for ( EffectInstance effectinstance : player.getActivePotionEffects()) {
-            player.connection.sendPacket(new SPlayEntityEffectPacket( player.getEntityId(), effectinstance) );
+        for (EffectInstance effectinstance : player.getActivePotionEffects()) {
+            player.connection.sendPacket(new SPlayEntityEffectPacket(player.getEntityId(), effectinstance));
         }
         player.setExperienceLevel(player.experienceLevel);
     }
