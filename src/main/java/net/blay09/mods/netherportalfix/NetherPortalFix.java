@@ -6,6 +6,8 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.network.play.server.SPlayEntityEffectPacket;
+import net.minecraft.potion.EffectInstance;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
@@ -114,13 +116,23 @@ public class NetherPortalFix {
                 if (server != null) {
                     BlockPos pos = BlockPos.fromLong(data.getLong(TO));
                     ServerWorld toWorld = server.getWorld(toDim);
-                    ((ServerPlayerEntity) event.player).teleport(toWorld, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, event.player.rotationYaw, event.player.rotationPitch);
+                    teleport( ((ServerPlayerEntity) event.player), pos, toWorld );
                     event.player.inPortal = false;
                 }
 
                 entityData.remove(SCHEDULED_TELEPORT);
             }
         }
+    }
+
+    private void teleport( ServerPlayerEntity player, BlockPos pos, ServerWorld toWorld ) {
+        player.teleport( toWorld, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, player.rotationYaw, player.rotationPitch );
+
+        // Resync some things that Vanilla is missing:
+        for ( EffectInstance effectinstance : player.getActivePotionEffects()) {
+            player.connection.sendPacket(new SPlayEntityEffectPacket( player.getEntityId(), effectinstance) );
+        }
+        player.setExperienceLevel(player.experienceLevel);
     }
 
     @SubscribeEvent
