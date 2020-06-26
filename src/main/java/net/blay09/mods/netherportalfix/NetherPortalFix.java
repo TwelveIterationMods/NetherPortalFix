@@ -10,11 +10,11 @@ import net.minecraft.network.play.server.SPlayEntityEffectPacket;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Direction;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
@@ -57,11 +57,13 @@ public class NetherPortalFix {
             }
 
             BlockPos fromPos = player.prevBlockpos;
-            DimensionType fromDim = event.getEntity().dimension;
-            DimensionType toDim = event.getDimension();
+            final RegistryKey<World> fromDim = null; // TODO event.getEntity().dimension;
+            final RegistryKey<World> toDim = event.getDimension();
+            final RegistryKey<World> OVERWORLD = World.field_234918_g_;
+            final RegistryKey<World> THE_NETHER = World.field_234919_h_;
             boolean isPlayerCurrentlyInPortal = player.inPortal;
-            boolean isTeleportBetweenNetherAndOverworld = (fromDim == DimensionType.OVERWORLD && toDim == DimensionType.THE_NETHER)
-                    || (fromDim == DimensionType.THE_NETHER && toDim == DimensionType.OVERWORLD);
+            boolean isTeleportBetweenNetherAndOverworld = (fromDim == OVERWORLD && toDim == THE_NETHER)
+                    || (fromDim == THE_NETHER && toDim == OVERWORLD);
             if (isPlayerCurrentlyInPortal && isTeleportBetweenNetherAndOverworld) {
                 ListNBT portalList = getPlayerPortalList(player);
                 CompoundNBT returnPortal = findReturnPortal(portalList, fromPos, fromDim);
@@ -86,7 +88,9 @@ public class NetherPortalFix {
                         if (foundNetherPortalAtTargetLocation) {
                             CompoundNBT tagCompound = new CompoundNBT();
 
-                            ResourceLocation dimensionRegistryName = DimensionType.getKey(toDim);
+                            // TODO getRegistryName returns null for Vanilla dimensions, so we need to use this instead --- still the case for 1.16 or not?
+                            // ResourceLocation dimensionRegistryName = DimensionType.getKey(toDim);
+                            ResourceLocation dimensionRegistryName = toDim.func_240901_a_(); // getResourceLocation()
                             tagCompound.putString(TO_DIM, String.valueOf(dimensionRegistryName));
 
                             tagCompound.putLong(TO, toPos.toLong());
@@ -111,9 +115,9 @@ public class NetherPortalFix {
             CompoundNBT entityData = event.player.getPersistentData();
             if (entityData.contains(SCHEDULED_TELEPORT)) {
                 CompoundNBT data = entityData.getCompound(SCHEDULED_TELEPORT);
-                DimensionType toDim = DimensionType.byName(new ResourceLocation(data.getString(TO_DIM)));
+                RegistryKey<World> toDim = null; // TODO DimensionType.byName(new ResourceLocation(data.getString(TO_DIM)));
                 if (toDim == null) {
-                    toDim = DimensionType.OVERWORLD;
+                    toDim = World.field_234918_g_; // OVERWORLD
                 }
 
                 MinecraftServer server = event.player.getEntityWorld().getServer();
@@ -141,10 +145,12 @@ public class NetherPortalFix {
 
     @SubscribeEvent
     public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-        if ((event.getFrom() == DimensionType.OVERWORLD && event.getTo() == DimensionType.THE_NETHER) || (event.getFrom() == DimensionType.THE_NETHER && event.getTo() == DimensionType.OVERWORLD)) {
+        final RegistryKey<World> OVERWORLD = World.field_234918_g_;
+        final RegistryKey<World> THE_NETHER = World.field_234919_h_;
+        if ((event.getFrom() == OVERWORLD && event.getTo() == THE_NETHER) || (event.getFrom() == THE_NETHER && event.getTo() == OVERWORLD)) {
             PlayerEntity player = event.getPlayer();
             BlockPos fromPos = findPortalAt(player, event.getFrom(), player.prevBlockpos);
-            BlockPos toPos = player.getPosition();
+            BlockPos toPos = player.func_233580_cy_(); // getPosition()
             if (fromPos != null) {
                 ListNBT portalList = getPlayerPortalList(player);
                 storeReturnPortal(portalList, toPos, event.getTo(), fromPos);
@@ -157,7 +163,7 @@ public class NetherPortalFix {
         }
     }
 
-    private BlockPos findPortalAt(PlayerEntity player, DimensionType dimensionType, BlockPos pos) {
+    private BlockPos findPortalAt(PlayerEntity player, RegistryKey<World> dimensionType, BlockPos pos) {
         MinecraftServer server = player.world.getServer();
         if (server != null) {
             ServerWorld fromWorld = server.getWorld(dimensionType);
@@ -184,10 +190,10 @@ public class NetherPortalFix {
     }
 
     @Nullable
-    private CompoundNBT findReturnPortal(ListNBT portalList, BlockPos triggerPos, DimensionType triggerDim) {
+    private CompoundNBT findReturnPortal(ListNBT portalList, BlockPos triggerPos, RegistryKey<World> triggerDim) {
         for (INBT entry : portalList) {
             CompoundNBT portal = (CompoundNBT) entry;
-            DimensionType fromDim = DimensionType.byName(new ResourceLocation(portal.getString(FROM_DIM)));
+            RegistryKey<World> fromDim = null; // TODO DimensionType.byName(new ResourceLocation(portal.getString(FROM_DIM)));
             if (fromDim == triggerDim) {
                 BlockPos portalTrigger = BlockPos.fromLong(portal.getLong(FROM));
                 if (portalTrigger.distanceSq(triggerPos) <= MAX_PORTAL_DISTANCE_SQ) {
@@ -199,15 +205,15 @@ public class NetherPortalFix {
         return null;
     }
 
-    private void storeReturnPortal(ListNBT portalList, BlockPos triggerPos, DimensionType triggerDim, BlockPos returnPos) {
+    private void storeReturnPortal(ListNBT portalList, BlockPos triggerPos, RegistryKey<World> triggerDim, BlockPos returnPos) {
         CompoundNBT found = findReturnPortal(portalList, triggerPos, triggerDim);
         if (found == null) {
             CompoundNBT portalCompound = new CompoundNBT();
             portalCompound.putLong(FROM, triggerPos.toLong());
 
-            // getRegistryName returns null for Vanilla dimensions, so we need to use this instead
-            ResourceLocation dimensionRegistryName = DimensionType.getKey(triggerDim);
-            portalCompound.putString(FROM_DIM, String.valueOf(dimensionRegistryName));
+            // TODO getRegistryName returns null for Vanilla dimensions, so we need to use this instead --- still the case for 1.16 or not?
+            // ResourceLocation dimensionRegistryName = DimensionType.getKey(triggerDim);
+            portalCompound.putString(FROM_DIM, String.valueOf(triggerDim.func_240901_a_())); // getResourceLocation()
 
             portalCompound.putLong(TO, returnPos.toLong());
             portalList.add(portalCompound);
