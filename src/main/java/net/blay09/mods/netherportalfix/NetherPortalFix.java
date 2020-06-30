@@ -13,6 +13,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
@@ -57,7 +58,7 @@ public class NetherPortalFix {
             }
 
             BlockPos fromPos = player.prevBlockpos;
-            final RegistryKey<World> fromDim = null; // TODO event.getEntity().dimension;
+            final RegistryKey<World> fromDim = event.getEntity().world.func_234923_W_(); // getDimension()
             final RegistryKey<World> toDim = event.getDimension();
             final RegistryKey<World> OVERWORLD = World.field_234918_g_;
             final RegistryKey<World> THE_NETHER = World.field_234919_h_;
@@ -88,9 +89,7 @@ public class NetherPortalFix {
                         if (foundNetherPortalAtTargetLocation) {
                             CompoundNBT tagCompound = new CompoundNBT();
 
-                            // TODO getRegistryName returns null for Vanilla dimensions, so we need to use this instead --- still the case for 1.16 or not?
-                            // ResourceLocation dimensionRegistryName = DimensionType.getKey(toDim);
-                            ResourceLocation dimensionRegistryName = toDim.func_240901_a_(); // getResourceLocation()
+                            ResourceLocation dimensionRegistryName = toDim.func_240901_a_();
                             tagCompound.putString(TO_DIM, String.valueOf(dimensionRegistryName));
 
                             tagCompound.putLong(TO, toPos.toLong());
@@ -115,16 +114,15 @@ public class NetherPortalFix {
             CompoundNBT entityData = event.player.getPersistentData();
             if (entityData.contains(SCHEDULED_TELEPORT)) {
                 CompoundNBT data = entityData.getCompound(SCHEDULED_TELEPORT);
-                RegistryKey<World> toDim = null; // TODO DimensionType.byName(new ResourceLocation(data.getString(TO_DIM)));
-                if (toDim == null) {
-                    toDim = World.field_234918_g_; // OVERWORLD
-                }
+                RegistryKey<World> toDim = RegistryKey.func_240903_a_(Registry.field_239699_ae_, new ResourceLocation(data.getString(TO_DIM)));
 
                 MinecraftServer server = event.player.getEntityWorld().getServer();
                 if (server != null) {
                     BlockPos pos = BlockPos.fromLong(data.getLong(TO));
                     ServerWorld toWorld = server.getWorld(toDim);
-                    teleport(((ServerPlayerEntity) event.player), pos, toWorld);
+                    if (toWorld != null) {
+                        teleport(((ServerPlayerEntity) event.player), pos, toWorld);
+                    }
                     event.player.inPortal = false;
                 }
 
@@ -193,7 +191,7 @@ public class NetherPortalFix {
     private CompoundNBT findReturnPortal(ListNBT portalList, BlockPos triggerPos, RegistryKey<World> triggerDim) {
         for (INBT entry : portalList) {
             CompoundNBT portal = (CompoundNBT) entry;
-            RegistryKey<World> fromDim = null; // TODO DimensionType.byName(new ResourceLocation(portal.getString(FROM_DIM)));
+            RegistryKey<World> fromDim = RegistryKey.func_240903_a_(Registry.field_239699_ae_, new ResourceLocation(portal.getString(FROM_DIM)));
             if (fromDim == triggerDim) {
                 BlockPos portalTrigger = BlockPos.fromLong(portal.getLong(FROM));
                 if (portalTrigger.distanceSq(triggerPos) <= MAX_PORTAL_DISTANCE_SQ) {
@@ -211,8 +209,6 @@ public class NetherPortalFix {
             CompoundNBT portalCompound = new CompoundNBT();
             portalCompound.putLong(FROM, triggerPos.toLong());
 
-            // TODO getRegistryName returns null for Vanilla dimensions, so we need to use this instead --- still the case for 1.16 or not?
-            // ResourceLocation dimensionRegistryName = DimensionType.getKey(triggerDim);
             portalCompound.putString(FROM_DIM, String.valueOf(triggerDim.func_240901_a_())); // getResourceLocation()
 
             portalCompound.putLong(TO, returnPos.toLong());
