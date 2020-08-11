@@ -147,6 +147,13 @@ public class NetherPortalFix {
         final RegistryKey<World> THE_NETHER = World.field_234919_h_;
         if ((event.getFrom() == OVERWORLD && event.getTo() == THE_NETHER) || (event.getFrom() == THE_NETHER && event.getTo() == OVERWORLD)) {
             PlayerEntity player = event.getPlayer();
+
+            // If prevBlockpos is not set, the player has spawned in the Nether, so we shouldn't look for a return
+            // portal to store
+            if (player.prevBlockpos == null) {
+                return;
+            }
+
             BlockPos fromPos = findPortalAt(player, event.getFrom(), player.prevBlockpos);
             BlockPos toPos = player.func_233580_cy_(); // getPosition()
             if (fromPos != null) {
