@@ -114,7 +114,7 @@ public class NetherPortalFix {
             CompoundNBT entityData = event.player.getPersistentData();
             if (entityData.contains(SCHEDULED_TELEPORT)) {
                 CompoundNBT data = entityData.getCompound(SCHEDULED_TELEPORT);
-                RegistryKey<World> toDim = RegistryKey.func_240903_a_(Registry.field_239699_ae_, new ResourceLocation(data.getString(TO_DIM)));
+                RegistryKey<World> toDim = RegistryKey.func_240903_a_(Registry.WORLD_KEY, new ResourceLocation(data.getString(TO_DIM)));
 
                 MinecraftServer server = event.player.getEntityWorld().getServer();
                 if (server != null) {
@@ -155,7 +155,7 @@ public class NetherPortalFix {
             }
 
             BlockPos fromPos = findPortalAt(player, event.getFrom(), player.prevBlockpos);
-            BlockPos toPos = player.func_233580_cy_(); // getPosition()
+            BlockPos toPos = player.getPosition();
             if (fromPos != null) {
                 ListNBT portalList = getPlayerPortalList(player);
                 storeReturnPortal(portalList, toPos, event.getTo(), fromPos);
@@ -198,7 +198,7 @@ public class NetherPortalFix {
     private CompoundNBT findReturnPortal(ListNBT portalList, BlockPos triggerPos, RegistryKey<World> triggerDim) {
         for (INBT entry : portalList) {
             CompoundNBT portal = (CompoundNBT) entry;
-            RegistryKey<World> fromDim = RegistryKey.func_240903_a_(Registry.field_239699_ae_, new ResourceLocation(portal.getString(FROM_DIM)));
+            RegistryKey<World> fromDim = RegistryKey.func_240903_a_(Registry.WORLD_KEY, new ResourceLocation(portal.getString(FROM_DIM)));
             if (fromDim == triggerDim) {
                 BlockPos portalTrigger = BlockPos.fromLong(portal.getLong(FROM));
                 if (portalTrigger.distanceSq(triggerPos) <= MAX_PORTAL_DISTANCE_SQ) {

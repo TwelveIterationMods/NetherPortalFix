@@ -3,6 +3,7 @@ loaderVersion="[24,)"
 issueTrackerURL="https://github.com/blay09/NetherPortalfix/issues"
 displayURL="https://minecraft.curseforge.com/projects/netherportalfix"
 authors="BlayTheNinth"
+license="MIT"
 
 [[mods]]
 modId="netherportalfix"
