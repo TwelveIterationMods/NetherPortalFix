@@ -58,10 +58,10 @@ public class NetherPortalFix {
             }
 
             BlockPos fromPos = player.prevBlockpos;
-            final RegistryKey<World> fromDim = event.getEntity().world.func_234923_W_(); // getDimension()
+            final RegistryKey<World> fromDim = event.getEntity().world.getDimensionKey();
             final RegistryKey<World> toDim = event.getDimension();
-            final RegistryKey<World> OVERWORLD = World.field_234918_g_;
-            final RegistryKey<World> THE_NETHER = World.field_234919_h_;
+            final RegistryKey<World> OVERWORLD = World.OVERWORLD;
+            final RegistryKey<World> THE_NETHER = World.THE_NETHER;
             boolean isPlayerCurrentlyInPortal = player.inPortal;
             boolean isTeleportBetweenNetherAndOverworld = (fromDim == OVERWORLD && toDim == THE_NETHER)
                     || (fromDim == THE_NETHER && toDim == OVERWORLD);
@@ -89,7 +89,7 @@ public class NetherPortalFix {
                         if (foundNetherPortalAtTargetLocation) {
                             CompoundNBT tagCompound = new CompoundNBT();
 
-                            ResourceLocation dimensionRegistryName = toDim.func_240901_a_();
+                            ResourceLocation dimensionRegistryName = toDim.getLocation();
                             tagCompound.putString(TO_DIM, String.valueOf(dimensionRegistryName));
 
                             tagCompound.putLong(TO, toPos.toLong());
@@ -114,7 +114,7 @@ public class NetherPortalFix {
             CompoundNBT entityData = event.player.getPersistentData();
             if (entityData.contains(SCHEDULED_TELEPORT)) {
                 CompoundNBT data = entityData.getCompound(SCHEDULED_TELEPORT);
-                RegistryKey<World> toDim = RegistryKey.func_240903_a_(Registry.WORLD_KEY, new ResourceLocation(data.getString(TO_DIM)));
+                RegistryKey<World> toDim = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(data.getString(TO_DIM)));
 
                 MinecraftServer server = event.player.getEntityWorld().getServer();
                 if (server != null) {
@@ -143,8 +143,8 @@ public class NetherPortalFix {
 
     @SubscribeEvent
     public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-        final RegistryKey<World> OVERWORLD = World.field_234918_g_;
-        final RegistryKey<World> THE_NETHER = World.field_234919_h_;
+        final RegistryKey<World> OVERWORLD = World.OVERWORLD;
+        final RegistryKey<World> THE_NETHER = World.THE_NETHER;
         if ((event.getFrom() == OVERWORLD && event.getTo() == THE_NETHER) || (event.getFrom() == THE_NETHER && event.getTo() == OVERWORLD)) {
             PlayerEntity player = event.getPlayer();
 
@@ -198,7 +198,7 @@ public class NetherPortalFix {
     private CompoundNBT findReturnPortal(ListNBT portalList, BlockPos triggerPos, RegistryKey<World> triggerDim) {
         for (INBT entry : portalList) {
             CompoundNBT portal = (CompoundNBT) entry;
-            RegistryKey<World> fromDim = RegistryKey.func_240903_a_(Registry.WORLD_KEY, new ResourceLocation(portal.getString(FROM_DIM)));
+            RegistryKey<World> fromDim = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(portal.getString(FROM_DIM)));
             if (fromDim == triggerDim) {
                 BlockPos portalTrigger = BlockPos.fromLong(portal.getLong(FROM));
                 if (portalTrigger.distanceSq(triggerPos) <= MAX_PORTAL_DISTANCE_SQ) {
@@ -216,7 +216,7 @@ public class NetherPortalFix {
             CompoundNBT portalCompound = new CompoundNBT();
             portalCompound.putLong(FROM, triggerPos.toLong());
 
-            portalCompound.putString(FROM_DIM, String.valueOf(triggerDim.func_240901_a_())); // getResourceLocation()
+            portalCompound.putString(FROM_DIM, String.valueOf(triggerDim.getLocation()));
 
             portalCompound.putLong(TO, returnPos.toLong());
             portalList.add(portalCompound);
