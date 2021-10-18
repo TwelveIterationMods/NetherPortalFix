@@ -1,0 +1,33 @@
+modLoader="javafml"
+loaderVersion="[37,)"
+license="All rights reserved"
+issueTrackerURL="https://github.com/ModdingForBlockheads/NetherPortalFix/issues"
+[[mods]]
+modId="netherportalfix"
+version="${file.jarVersion}"
+displayName="NetherPortalFix"
+displayURL="https://blay09.net/mods/netherportalfix"
+logoFile="netherportalfix-icon.png"
+credits="BlayTheNinth"
+authors="BlayTheNinth"
+description='''
+Ensures correct destinations when travelling back and forth through Nether Portals in Multiplayer.
+'''
+[[dependencies.netherportalfix]]
+    modId="forge"
+    mandatory=true
+    versionRange="[37,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.netherportalfix]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.17.1,1.18)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.netherportalfix]]
+    modId="balm"
+    mandatory=true
+    versionRange="[1.6.0,)"
+    ordering="NONE"
+    side="BOTH"
