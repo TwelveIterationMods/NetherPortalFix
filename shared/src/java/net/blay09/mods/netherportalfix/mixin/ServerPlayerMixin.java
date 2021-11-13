@@ -1,0 +1,56 @@
+package net.blay09.mods.netherportalfix.mixin;
+
+import net.blay09.mods.netherportalfix.NetherPortalFix;
+import net.blay09.mods.netherportalfix.ReturnPortal;
+import net.blay09.mods.netherportalfix.ReturnPortalManager;
+import net.minecraft.BlockUtil;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Optional;
+
+@Mixin(ServerPlayer.class)
+public class ServerPlayerMixin {
+
+    @Inject(method = "getExitPortal(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Z)Ljava/util/Optional;", at = @At("RETURN"), cancellable = true)
+    public void getExitPortal(ServerLevel level, BlockPos pos, boolean isToNether, CallbackInfoReturnable<Optional<BlockUtil.FoundRectangle>> callbackInfo) {
+        ServerPlayer player = (ServerPlayer) (Object) this;
+        BlockPos fromPos = player.blockPosition();
+        final ResourceKey<Level> fromDim = player.level.dimension();
+        final ResourceKey<Level> toDim = level.dimension();
+        final ResourceKey<Level> OVERWORLD = Level.OVERWORLD;
+        final ResourceKey<Level> THE_NETHER = Level.NETHER;
+        boolean isPlayerCurrentlyInPortal = ((EntityAccessor) player).getIsInsidePortal();
+        boolean isTeleportBetweenNetherAndOverworld = (fromDim == OVERWORLD && toDim == THE_NETHER)
+                || (fromDim == THE_NETHER && toDim == OVERWORLD);
+        if (isPlayerCurrentlyInPortal && isTeleportBetweenNetherAndOverworld) {
+            ReturnPortal returnPortal = ReturnPortalManager.findReturnPortal(player, fromDim, fromPos);
+            if (returnPortal == null) {
+                NetherPortalFix.logger.info("No return portal found");
+                return;
+            }
+
+            MinecraftServer server = player.getServer();
+            if (server == null) {
+                return;
+            }
+
+            Level toLevel = server.getLevel(toDim);
+            if (toLevel == null) {
+                return;
+            }
+
+            NetherPortalFix.logger.info("Return portal found, redirecting! :)");
+            callbackInfo.setReturnValue(Optional.of(returnPortal.getRectangle()));
+        }
+    }
+
+}
