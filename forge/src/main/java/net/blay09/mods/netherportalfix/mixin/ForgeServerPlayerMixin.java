@@ -20,13 +20,13 @@ public class ForgeServerPlayerMixin {
 
     private static final ThreadLocal<ResourceKey<Level>> fromDimHolder = new ThreadLocal<>();
 
-    @Inject(method = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraftforge/common/util/ITeleporter;)Lnet/minecraft/world/entity/Entity;", at = @At("HEAD"))
+    @Inject(remap = false, method = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraftforge/common/util/ITeleporter;)Lnet/minecraft/world/entity/Entity;", at = @At("HEAD"))
     public void changeDimensionHead(ServerLevel level, ITeleporter teleporter, CallbackInfoReturnable<Entity> callbackInfo) {
         ServerPlayer player = (ServerPlayer) (Object) this;
         fromDimHolder.set(player.level.dimension());
     }
 
-    @Inject(method = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraftforge/common/util/ITeleporter;)Lnet/minecraft/world/entity/Entity;", at = @At("RETURN"))
+    @Inject(remap = false, method = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraftforge/common/util/ITeleporter;)Lnet/minecraft/world/entity/Entity;", at = @At("RETURN"))
     public void changeDimensionTail(ServerLevel level, ITeleporter teleporter, CallbackInfoReturnable<Entity> callbackInfo) {
         ServerPlayer player = (ServerPlayer) (Object) this;
         final ResourceKey<Level> fromDim = fromDimHolder.get();

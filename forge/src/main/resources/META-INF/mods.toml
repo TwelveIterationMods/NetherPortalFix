@@ -2,6 +2,7 @@ modLoader="javafml"
 loaderVersion="[37,)"
 license="All rights reserved"
 issueTrackerURL="https://github.com/ModdingForBlockheads/NetherPortalFix/issues"
+
 [[mods]]
 modId="netherportalfix"
 version="${file.jarVersion}"
@@ -13,6 +14,7 @@ authors="BlayTheNinth"
 description='''
 Ensures correct destinations when travelling back and forth through Nether Portals in Multiplayer.
 '''
+
 [[dependencies.netherportalfix]]
     modId="forge"
     mandatory=true
@@ -28,6 +30,6 @@ Ensures correct destinations when travelling back and forth through Nether Porta
 [[dependencies.netherportalfix]]
     modId="balm"
     mandatory=true
-    versionRange="[1.6.0,)"
+    versionRange="[1.8.0,)"
     ordering="NONE"
     side="BOTH"
