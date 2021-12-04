@@ -10,6 +10,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.border.WorldBorder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,8 +21,8 @@ import java.util.Optional;
 @Mixin(ServerPlayer.class)
 public class ServerPlayerMixin {
 
-    @Inject(method = "getExitPortal(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Z)Ljava/util/Optional;", at = @At("RETURN"), cancellable = true)
-    public void getExitPortal(ServerLevel level, BlockPos pos, boolean isToNether, CallbackInfoReturnable<Optional<BlockUtil.FoundRectangle>> callbackInfo) {
+    @Inject(method = "getExitPortal(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;ZLnet/minecraft/world/level/border/WorldBorder;)Ljava/util/Optional;", at = @At("RETURN"), cancellable = true)
+    public void getExitPortal(ServerLevel level, BlockPos pos, boolean isToNether, WorldBorder worldBorder, CallbackInfoReturnable<Optional<BlockUtil.FoundRectangle>> callbackInfo) {
         ServerPlayer player = (ServerPlayer) (Object) this;
         BlockPos fromPos = player.blockPosition();
         final ResourceKey<Level> fromDim = player.level.dimension();
