@@ -13,8 +13,8 @@ This mod is available for both Forge and Fabric (starting Minecraft 1.17).
 
 #### Fabric
 
-[![Versions](http://cf.way2muchnoise.eu/versions/_latest.svg)](https://www.curseforge.com/minecraft/mc-mods/netherportalfix-fabric)
-[![Downloads](http://cf.way2muchnoise.eu/full__downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/netherportalfix-fabric)
+[![Versions](http://cf.way2muchnoise.eu/versions/547696_latest.svg)](https://www.curseforge.com/minecraft/mc-mods/netherportalfix-fabric)
+[![Downloads](http://cf.way2muchnoise.eu/full_547696_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/netherportalfix-fabric)
 
 ## Contributing
 

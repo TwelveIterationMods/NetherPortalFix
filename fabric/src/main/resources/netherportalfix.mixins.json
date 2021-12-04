@@ -2,9 +2,11 @@
   "required": true,
   "minVersion": "0.8",
   "package": "net.blay09.mods.netherportalfix.mixin",
-  "compatibilityLevel": "JAVA_16",
+  "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "EntityAccessor", "LivingEntityAccessor", "ServerPlayerMixin"
+    "EntityAccessor",
+    "LivingEntityAccessor",
+    "ServerPlayerMixin"
   ],
   "client": [
   ],
