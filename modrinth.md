@@ -28,6 +28,6 @@ It keeps track of what portals a player went through in order to ensure correct 
 
 
 <p>
-    <img src="https://media.forgecdn.net/attachments/31/473/broken2.png" alt="" width="256" height="256" /> 
-    <img src="https://media.forgecdn.net/attachments/31/474/fixed2.png" alt="" width="256" height="256" />
+    <img src="https://blay09.net/files/brand/netherportalfix_broken.png" alt="" width="256" height="256" /> 
+    <img src="https://blay09.net/files/brand/netherportalfix_fixed.png" alt="" width="256" height="256" />
 </p>
