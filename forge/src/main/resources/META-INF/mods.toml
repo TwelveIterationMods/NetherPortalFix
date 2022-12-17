@@ -1,7 +1,7 @@
 modLoader="javafml"
-loaderVersion="[41,)"
+loaderVersion="[44,)"
 license="All rights reserved"
-issueTrackerURL="https://github.com/ModdingForBlockheads/NetherPortalFix/issues"
+issueTrackerURL="https://github.com/TwelveIterationMods/NetherPortalFix/issues"
 
 [[mods]]
 modId="netherportalfix"
@@ -18,18 +18,18 @@ Ensures correct destinations when travelling back and forth through Nether Porta
 [[dependencies.netherportalfix]]
     modId="forge"
     mandatory=true
-    versionRange="[41,)"
+    versionRange="[44,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.netherportalfix]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.19,1.20)"
+    versionRange="[1.19.3,1.20)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.netherportalfix]]
     modId="balm"
     mandatory=true
-    versionRange="[4.0.0,)"
+    versionRange="[5.0.0,)"
     ordering="NONE"
     side="BOTH"

@@ -4,6 +4,7 @@ import net.blay09.mods.balm.api.Balm;
 import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -55,7 +56,7 @@ public class ReturnPortalManager {
         ListTag portalList = getPlayerPortalList(player);
         for (Tag entry : portalList) {
             CompoundTag portal = (CompoundTag) entry;
-            ResourceKey<Level> entryFromDim = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(portal.getString(FROM_DIM)));
+            ResourceKey<Level> entryFromDim = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(portal.getString(FROM_DIM)));
             if (entryFromDim == fromDim) {
                 BlockPos portalTrigger = BlockPos.of(portal.getLong(FROM_POS));
                 if (portalTrigger.distSqr(fromPos) <= MAX_PORTAL_DISTANCE_SQ) {
