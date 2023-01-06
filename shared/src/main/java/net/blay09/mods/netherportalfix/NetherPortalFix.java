@@ -29,12 +29,12 @@ public class NetherPortalFix {
                 BlockPos toPos = player.blockPosition();
                 if (fromPortal != null) {
                     ReturnPortalManager.storeReturnPortal(player, toDim, toPos, fromPortal);
-                    NetherPortalFix.logger.info("Storing return portal from {} to {} in {}", toDim, fromPortal.minCorner, fromDim);
+                    NetherPortalFix.logger.debug("Storing return portal from {} to {} in {}", toDim, fromPortal.minCorner, fromDim);
                 } else {
-                    NetherPortalFix.logger.info("Not storing return portal because I'm not in a portal.");
+                    NetherPortalFix.logger.debug("Not storing return portal because I'm not in a portal.");
                 }
             } else {
-                NetherPortalFix.logger.info("Not storing return portal because it's from {} to {}", fromDim, toDim);
+                NetherPortalFix.logger.debug("Not storing return portal because it's from {} to {}", fromDim, toDim);
             }
         });
     }
