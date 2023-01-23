@@ -10,8 +10,8 @@
   ],
   "contact": {
     "homepage": "https://blay09.net/mods/netherportalfix",
-    "sources": "https://github.com/ModdingForBlockheads/NetherPortalFix",
-    "issues": "https://github.com/ModdingForBlockheads/NetherPortalFix/issues"
+    "sources": "https://github.com/TwelveIterationMods/NetherPortalFix",
+    "issues": "https://github.com/TwelveIterationMods/NetherPortalFix/issues"
   },
 
   "license": "All Rights Reserved",
@@ -42,7 +42,7 @@
   "custom": {
     "modmenu": {
       "links": {
-        "modmenu.discord": "https://discord.gg/scGAfXC"
+        "modmenu.discord": "https://discord.gg/VAfZ2Nau6j"
       }
     }
   }
