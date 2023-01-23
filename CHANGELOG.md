@@ -1,1 +1,1 @@
-- Updated to Minecraft 1.19.3
+- Fixed crash if mods change player dimension during spawn
