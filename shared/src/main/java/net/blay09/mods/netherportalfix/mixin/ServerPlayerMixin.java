@@ -21,7 +21,7 @@ import java.util.Optional;
 @Mixin(ServerPlayer.class)
 public class ServerPlayerMixin {
 
-    @Inject(method = "getExitPortal(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;ZLnet/minecraft/world/level/border/WorldBorder;)Ljava/util/Optional;", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "getExitPortal(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;ZLnet/minecraft/world/level/border/WorldBorder;)Ljava/util/Optional;", at = @At("HEAD"), cancellable = true)
     public void getExitPortal(ServerLevel level, BlockPos pos, boolean isToNether, WorldBorder worldBorder, CallbackInfoReturnable<Optional<BlockUtil.FoundRectangle>> callbackInfo) {
         ServerPlayer player = (ServerPlayer) (Object) this;
         BlockPos fromPos = player.blockPosition();
