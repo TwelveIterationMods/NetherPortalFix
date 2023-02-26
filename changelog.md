@@ -1,3 +1,2 @@
-## Version 9.0.0 for Minecraft 1.18
-
-- Updated to Minecraft 1.18
+- Fixed crash if mods change player dimension during spawn
+- Fixed random nether portals being spawned in their expected Vanilla locations even if players are returned to their return portal
