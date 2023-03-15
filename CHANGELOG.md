@@ -1,1 +1,1 @@
-- Fixed random nether portals being spawned in their expected Vanilla locations even if players are returned to their return portal
+- Updated to Minecraft 1.19.4
