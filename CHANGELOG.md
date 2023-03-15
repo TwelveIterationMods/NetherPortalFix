@@ -1,3 +1,1 @@
-## Version 10.0.0 for Minecraft 1.19.x
-
-- Updated to Minecraft 1.19
+- Fixed random nether portals being spawned in their expected Vanilla locations even if players are returned to their return portal

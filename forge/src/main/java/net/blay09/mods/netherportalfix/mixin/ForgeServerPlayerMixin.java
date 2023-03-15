@@ -33,17 +33,24 @@ public class ForgeServerPlayerMixin {
         final ResourceKey<Level> toDim = level.dimension();
         final ResourceKey<Level> OVERWORLD = Level.OVERWORLD;
         final ResourceKey<Level> THE_NETHER = Level.NETHER;
-        if ((fromDim == OVERWORLD && toDim == THE_NETHER) || (fromDim == THE_NETHER && toDim == OVERWORLD)) {
-            BlockUtil.FoundRectangle fromPortal = ReturnPortalManager.findPortalAt(player, fromDim, ((LivingEntityAccessor) player).getLastPos());
-            BlockPos toPos = player.blockPosition();
-            if (fromPortal != null) {
-                ReturnPortalManager.storeReturnPortal(player, toDim, toPos, fromPortal);
-                NetherPortalFix.logger.info("Storing return portal from {} to {} in {}", toDim, fromPortal.minCorner, fromDim);
-            } else {
-                NetherPortalFix.logger.info("Not storing return portal because I'm not in a portal.");
-            }
+        if ((fromDim != OVERWORLD || toDim != THE_NETHER) && (fromDim != THE_NETHER || toDim != OVERWORLD)) {
+            NetherPortalFix.logger.debug("Not storing return portal because it's from {} to {}", fromDim, toDim);
+            return;
+        }
+
+        BlockPos lastPos = ((LivingEntityAccessor) player).getLastPos();
+        if (lastPos == null) {
+            NetherPortalFix.logger.debug("Not storing return portal because I just spawned.");
+            return;
+        }
+
+        BlockUtil.FoundRectangle fromPortal = ReturnPortalManager.findPortalAt(player, fromDim, lastPos);
+        BlockPos toPos = player.blockPosition();
+        if (fromPortal == null) {
+            NetherPortalFix.logger.debug("Not storing return portal because I'm not in a portal.");
         } else {
-            NetherPortalFix.logger.info("Not storing return portal because it's from {} to {}", fromDim, toDim);
+            ReturnPortalManager.storeReturnPortal(player, toDim, toPos, fromPortal);
+            NetherPortalFix.logger.debug("Storing return portal from {} to {} in {}", toDim, fromPortal.minCorner, fromDim);
         }
     }
 
