@@ -32,7 +32,7 @@ public class ReturnPortalManager {
     private static final String TO_AXIS_2_SIZE = "ToAxis2Size";
 
     public static BlockUtil.FoundRectangle findPortalAt(Player player, ResourceKey<Level> dim, BlockPos pos) {
-        MinecraftServer server = player.level.getServer();
+        MinecraftServer server = player.level().getServer();
         if (server != null) {
             ServerLevel fromWorld = server.getLevel(dim);
             if (fromWorld != null) {

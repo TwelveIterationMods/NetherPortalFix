@@ -25,7 +25,7 @@ public class ServerPlayerMixin {
     public void getExitPortal(ServerLevel level, BlockPos pos, boolean isToNether, WorldBorder worldBorder, CallbackInfoReturnable<Optional<BlockUtil.FoundRectangle>> callbackInfo) {
         ServerPlayer player = (ServerPlayer) (Object) this;
         BlockPos fromPos = player.blockPosition();
-        final ResourceKey<Level> fromDim = player.level.dimension();
+        final ResourceKey<Level> fromDim = player.level().dimension();
         final ResourceKey<Level> toDim = level.dimension();
         final ResourceKey<Level> OVERWORLD = Level.OVERWORLD;
         final ResourceKey<Level> THE_NETHER = Level.NETHER;
