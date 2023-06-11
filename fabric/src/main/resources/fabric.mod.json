@@ -9,7 +9,7 @@
     "BlayTheNinth"
   ],
   "contact": {
-    "homepage": "https://blay09.net/mods/netherportalfix",
+    "homepage": "https://mods.twelveiterations.com/mc/netherportalfix",
     "sources": "https://github.com/TwelveIterationMods/NetherPortalFix",
     "issues": "https://github.com/TwelveIterationMods/NetherPortalFix/issues"
   },
@@ -29,15 +29,13 @@
     "netherportalfix.mixins.json"
   ],
   "depends": {
-    "cloth-config": ">=9.0.0",
-    "balm-fabric": ">=5.0.0",
-    "fabricloader": ">=0.14.7",
+    "balm-fabric": ">=7.0.0",
+    "fabricloader": ">=0.14.21",
     "fabric": "*",
-    "minecraft": ">=1.19.3",
+    "minecraft": ">=1.20",
     "java": ">=17"
   },
   "suggests": {
-    "modmenu": "*"
   },
   "custom": {
     "modmenu": {
