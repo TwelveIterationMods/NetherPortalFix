@@ -3,7 +3,6 @@ package net.blay09.mods.netherportalfix;
 import net.blay09.mods.balm.api.Balm;
 import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -42,6 +41,11 @@ public class ReturnPortalManager {
         }
 
         return null;
+    }
+
+    public static BlockUtil.FoundRectangle findRectangleFromReturnPortal(ServerLevel level, ReturnPortal returnPortal) {
+        PortalForcer portalForcer = level.getPortalForcer();
+        return portalForcer.findPortalAround(returnPortal.getRectangle().minCorner, false, level.getWorldBorder()).orElse(null);
     }
 
     public static ListTag getPlayerPortalList(Player player) {
