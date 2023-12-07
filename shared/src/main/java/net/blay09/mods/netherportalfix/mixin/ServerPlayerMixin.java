@@ -35,7 +35,13 @@ public class ServerPlayerMixin {
         if (isPlayerCurrentlyInPortal && isTeleportBetweenNetherAndOverworld) {
             ReturnPortal returnPortal = ReturnPortalManager.findReturnPortal(player, fromDim, fromPos);
             if (returnPortal == null) {
-                NetherPortalFix.logger.debug("No return portal found");
+                NetherPortalFix.logger.info("No return portal found");
+                return;
+            }
+
+            final var foundRectangle = ReturnPortalManager.findRectangleFromReturnPortal(level, returnPortal);
+            if (foundRectangle == null) {
+                NetherPortalFix.logger.info("Return portal is no longer valid");
                 return;
             }
 
@@ -50,7 +56,7 @@ public class ServerPlayerMixin {
             }
 
             NetherPortalFix.logger.debug("Return portal found, redirecting! :)");
-            callbackInfo.setReturnValue(Optional.of(returnPortal.getRectangle()));
+            callbackInfo.setReturnValue(Optional.of(foundRectangle));
         }
     }
 

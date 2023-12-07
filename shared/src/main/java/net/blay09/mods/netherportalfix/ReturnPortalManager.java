@@ -43,6 +43,11 @@ public class ReturnPortalManager {
         return null;
     }
 
+    public static BlockUtil.FoundRectangle findRectangleFromReturnPortal(ServerLevel level, ReturnPortal returnPortal) {
+        PortalForcer portalForcer = level.getPortalForcer();
+        return portalForcer.findPortalAround(returnPortal.getRectangle().minCorner, false, level.getWorldBorder()).orElse(null);
+    }
+
     public static ListTag getPlayerPortalList(Player player) {
         CompoundTag data = Balm.getHooks().getPersistentData(player);
         ListTag list = data.getList(RETURN_PORTAL_LIST, Tag.TAG_COMPOUND);
