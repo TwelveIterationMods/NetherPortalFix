@@ -21,9 +21,6 @@
   "entrypoints": {
     "main": [
       "net.blay09.mods.${mod_id}.fabric.Fabric${mod_main}"
-    ],
-    "client": [
-      "net.blay09.mods.${mod_id}.fabric.client.Fabric${mod_main}Client"
     ]
   },
   "mixins": [
