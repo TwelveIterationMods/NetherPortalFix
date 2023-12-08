@@ -89,6 +89,7 @@ subprojects {
                 "neoforge_version": neoforge_version,
                 "neoforge_version_range": neoforge_version_range,
                 "neoforge_loader_version_range": neoforge_loader_version_range,
+                "balm_version_range": balm_version_range,
                 "pack_format_number": pack_format_number
         ]
 

@@ -1,7 +1,8 @@
-package net.blay09.mods.netherportalfix.mixin;
+package net.blay09.mods.netherportalfix.forge.mixin;
 
 import net.blay09.mods.netherportalfix.NetherPortalFix;
 import net.blay09.mods.netherportalfix.ReturnPortalManager;
+import net.blay09.mods.netherportalfix.mixin.LivingEntityAccessor;
 import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;

@@ -1,13 +1,10 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "net.blay09.mods.netherportalfix.mixin",
+  "package": "net.blay09.mods.netherportalfix.fabric.mixin",
   "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "EntityAccessor",
-    "LivingEntityAccessor",
-    "ServerPlayerMixin"
   ],
   "client": [
   ],
