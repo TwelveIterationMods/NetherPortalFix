@@ -9,7 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.ITeleporter;
+import net.neoforged.neoforge.common.util.ITeleporter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,13 +20,13 @@ public class NeoForgeServerPlayerMixin {
 
     private static final ThreadLocal<ResourceKey<Level>> fromDimHolder = new ThreadLocal<>();
 
-    @Inject(remap = false, method = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraftforge/common/util/ITeleporter;)Lnet/minecraft/world/entity/Entity;", at = @At("HEAD"))
+    @Inject(remap = false, method = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lnet/neoforged/neoforge/common/util/ITeleporter;)Lnet/minecraft/world/entity/Entity;", at = @At("HEAD"))
     public void changeDimensionHead(ServerLevel level, ITeleporter teleporter, CallbackInfoReturnable<Entity> callbackInfo) {
         ServerPlayer player = (ServerPlayer) (Object) this;
         fromDimHolder.set(player.level().dimension());
     }
 
-    @Inject(remap = false, method = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraftforge/common/util/ITeleporter;)Lnet/minecraft/world/entity/Entity;", at = @At("RETURN"))
+    @Inject(remap = false, method = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lnet/neoforged/neoforge/common/util/ITeleporter;)Lnet/minecraft/world/entity/Entity;", at = @At("RETURN"))
     public void changeDimensionTail(ServerLevel level, ITeleporter teleporter, CallbackInfoReturnable<Entity> callbackInfo) {
         ServerPlayer player = (ServerPlayer) (Object) this;
         final ResourceKey<Level> fromDim = fromDimHolder.get();
