@@ -1,37 +1,40 @@
 {
   "schemaVersion": 1,
-  "id": "netherportalfix",
+  "id": "${mod_id}",
   "version": "${version}",
 
-  "name": "NetherPortalFix",
-  "description": "Ensures correct destinations when travelling back and forth through Nether Portals in Multiplayer.",
+  "name": "${mod_name}",
+  "description": "${description}",
   "authors": [
     "BlayTheNinth"
   ],
   "contact": {
-    "homepage": "https://mods.twelveiterations.com/mc/netherportalfix",
-    "sources": "https://github.com/TwelveIterationMods/NetherPortalFix",
-    "issues": "https://github.com/TwelveIterationMods/NetherPortalFix/issues"
+    "homepage": "${homepage}",
+    "sources": "${sources}",
+    "issues": "${issues}"
   },
 
-  "license": "All Rights Reserved",
-  "icon": "netherportalfix-icon.png",
+  "license": "${license}",
+  "icon": "${mod_id}.png",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.blay09.mods.netherportalfix.FabricNetherPortalFix"
+      "net.blay09.mods.${mod_id}.fabric.Fabric${mod_main}"
     ],
     "client": [
+      "net.blay09.mods.${mod_id}.fabric.client.Fabric${mod_main}Client"
     ]
   },
   "mixins": [
-    "netherportalfix.mixins.json"
+    "${mod_id}.mixins.json",
+    "${mod_id}.fabric.mixins.json"
   ],
+
   "depends": {
-    "balm-fabric": ">=8.0.0",
-    "fabricloader": ">=0.14.22",
-    "fabric": "*",
+    "fabricloader": ">=0.14",
+    "fabric-api": "*",
+    "balm-fabric": "*",
     "minecraft": ">=1.20.2",
     "java": ">=17"
   },
