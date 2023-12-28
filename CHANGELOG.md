@@ -1,1 +1,1 @@
-- Fixed portals still being linked to return portal positions even after those portals are broken
+- Updated to Minecraft 1.20.4
