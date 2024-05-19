@@ -1,2 +1,5 @@
 dependencies {
+    modImplementation("net.blay09.mods:balm-fabric:${balm_version}") {
+        changing = balm_version.contains("SNAPSHOT")
+    }
 }
