@@ -1,6 +1,7 @@
 package net.blay09.mods.netherportalfix;
 
 import net.blay09.mods.balm.api.Balm;
+import net.blay09.mods.balm.api.EmptyLoadContext;
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -9,7 +10,7 @@ import net.minecraftforge.fml.common.Mod;
 public class ForgeNetherPortalFix {
 
     public ForgeNetherPortalFix() {
-        Balm.initialize(NetherPortalFix.MOD_ID, NetherPortalFix::initialize);
+        Balm.initialize(NetherPortalFix.MOD_ID, EmptyLoadContext.INSTANCE, NetherPortalFix::initialize);
 
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> IExtensionPoint.DisplayTest.IGNORESERVERONLY, (a, b) -> true));
     }
