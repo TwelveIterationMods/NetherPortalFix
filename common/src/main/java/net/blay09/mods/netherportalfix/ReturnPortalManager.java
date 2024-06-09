@@ -1,7 +1,6 @@
 package net.blay09.mods.netherportalfix;
 
 import net.blay09.mods.balm.api.Balm;
-import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -12,6 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.portal.PortalForcer;
@@ -26,49 +26,40 @@ public class ReturnPortalManager {
     private static final String RETURN_PORTAL_UID = "UID";
     private static final String FROM_DIM = "FromDim";
     private static final String FROM_POS = "FromPos";
-    private static final String TO_MIN_CORNER = "ToMinCorner";
-    private static final String TO_AXIS_1_SIZE = "ToAxis1Size";
-    private static final String TO_AXIS_2_SIZE = "ToAxis2Size";
+    private static final String TO_POS = "ToPos";
 
-    public static BlockUtil.FoundRectangle findPortalAt(Player player, ResourceKey<Level> dim, BlockPos pos) {
+    public static BlockPos findPortalAt(Player player, ResourceKey<Level> dim, BlockPos pos) {
         MinecraftServer server = player.level().getServer();
         if (server != null) {
             ServerLevel fromWorld = server.getLevel(dim);
             if (fromWorld != null) {
                 PortalForcer portalForcer = fromWorld.getPortalForcer();
-                return portalForcer.findPortalAround(pos, false, fromWorld.getWorldBorder()).orElse(null);
+                return portalForcer.findClosestPortalPosition(pos, false, fromWorld.getWorldBorder()).orElse(null);
             }
         }
 
         return null;
     }
 
-    public static BlockUtil.FoundRectangle findRectangleFromReturnPortal(ServerLevel level, ReturnPortal returnPortal) {
-        PortalForcer portalForcer = level.getPortalForcer();
-        return portalForcer.findPortalAround(returnPortal.getRectangle().minCorner, false, level.getWorldBorder()).orElse(null);
-    }
-
-    public static ListTag getPlayerPortalList(Player player) {
-        CompoundTag data = Balm.getHooks().getPersistentData(player);
+    public static ListTag getPlayerPortalList(Entity entity) {
+        CompoundTag data = Balm.getHooks().getPersistentData(entity);
         ListTag list = data.getList(RETURN_PORTAL_LIST, Tag.TAG_COMPOUND);
         data.put(RETURN_PORTAL_LIST, list);
         return list;
     }
 
     @Nullable
-    public static ReturnPortal findReturnPortal(ServerPlayer player, ResourceKey<Level> fromDim, BlockPos fromPos) {
-        ListTag portalList = getPlayerPortalList(player);
+    public static ReturnPortal findReturnPortal(Entity entity, ResourceKey<Level> fromDim, BlockPos fromPos) {
+        ListTag portalList = getPlayerPortalList(entity);
         for (Tag entry : portalList) {
             CompoundTag portal = (CompoundTag) entry;
-            ResourceKey<Level> entryFromDim = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(portal.getString(FROM_DIM)));
+            ResourceKey<Level> entryFromDim = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(portal.getString(FROM_DIM)));
             if (entryFromDim == fromDim) {
                 BlockPos portalTrigger = BlockPos.of(portal.getLong(FROM_POS));
                 if (portalTrigger.distSqr(fromPos) <= MAX_PORTAL_DISTANCE_SQ) {
-                    UUID uid = portal.hasUUID(RETURN_PORTAL_UID) ? portal.getUUID(RETURN_PORTAL_UID) : UUID.randomUUID();
-                    BlockPos minCorner = BlockPos.of(portal.getLong(TO_MIN_CORNER));
-                    int axis1Size = portal.getInt(TO_AXIS_1_SIZE);
-                    int axis2Size = portal.getInt(TO_AXIS_2_SIZE);
-                    return new ReturnPortal(uid, new BlockUtil.FoundRectangle(minCorner, axis1Size, axis2Size));
+                    final var uid = portal.hasUUID(RETURN_PORTAL_UID) ? portal.getUUID(RETURN_PORTAL_UID) : UUID.randomUUID();
+                    final var pos = BlockPos.of(portal.getLong(TO_POS));
+                    return new ReturnPortal(uid, pos);
                 }
             }
         }
@@ -76,7 +67,7 @@ public class ReturnPortalManager {
         return null;
     }
 
-    public static void storeReturnPortal(ServerPlayer player, ResourceKey<Level> fromDim, BlockPos fromPos, BlockUtil.FoundRectangle toPortal) {
+    public static void storeReturnPortal(ServerPlayer player, ResourceKey<Level> fromDim, BlockPos fromPos, BlockPos toPos) {
         ListTag portalList = getPlayerPortalList(player);
         ReturnPortal returnPortal = findReturnPortal(player, fromDim, fromPos);
         if (returnPortal != null) {
@@ -87,9 +78,7 @@ public class ReturnPortalManager {
         portalCompound.putUUID(RETURN_PORTAL_UID, UUID.randomUUID());
         portalCompound.putString(FROM_DIM, String.valueOf(fromDim.location()));
         portalCompound.putLong(FROM_POS, fromPos.asLong());
-        portalCompound.putLong(TO_MIN_CORNER, toPortal.minCorner.asLong());
-        portalCompound.putInt(TO_AXIS_1_SIZE, toPortal.axis1Size);
-        portalCompound.putInt(TO_AXIS_2_SIZE, toPortal.axis2Size);
+        portalCompound.putLong(TO_POS, toPos.asLong());
         portalList.add(portalCompound);
     }
 

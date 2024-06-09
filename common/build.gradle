@@ -50,3 +50,11 @@ artifacts {
     commonResources sourceSets.main.resources.sourceDirectories.singleFile
     commonGeneratedResources sourceSets.generated.resources.sourceDirectories.singleFile
 }
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/shell/java'
+        }
+    }
+}

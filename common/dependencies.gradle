@@ -2,4 +2,5 @@ dependencies {
     implementation("net.blay09.mods:balm-common:${balm_version}") {
         changing = balm_version.endsWith("SNAPSHOT")
     }
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.6"))
 }

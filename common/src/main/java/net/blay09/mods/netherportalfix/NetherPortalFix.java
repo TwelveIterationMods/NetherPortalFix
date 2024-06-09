@@ -3,7 +3,6 @@ package net.blay09.mods.netherportalfix;
 import net.blay09.mods.balm.api.Balm;
 import net.blay09.mods.balm.api.event.PlayerChangedDimensionEvent;
 import net.blay09.mods.netherportalfix.mixin.LivingEntityAccessor;
-import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -36,7 +35,7 @@ public class NetherPortalFix {
                 return;
             }
 
-            BlockUtil.FoundRectangle fromPortal = ReturnPortalManager.findPortalAt(player, fromDim, lastPos);
+            final var fromPortal = ReturnPortalManager.findPortalAt(player, fromDim, lastPos);
             BlockPos toPos = player.blockPosition();
             if (fromPortal == null) {
                 NetherPortalFix.logger.debug("Not storing return portal because I'm not in a portal.");
@@ -44,7 +43,7 @@ public class NetherPortalFix {
             }
 
             ReturnPortalManager.storeReturnPortal(player, toDim, toPos, fromPortal);
-            NetherPortalFix.logger.debug("Storing return portal from {} to {} in {}", toDim, fromPortal.minCorner, fromDim);
+            NetherPortalFix.logger.debug("Storing return portal from {} to {} in {}", toDim, fromPortal, fromDim);
         });
     }
 
