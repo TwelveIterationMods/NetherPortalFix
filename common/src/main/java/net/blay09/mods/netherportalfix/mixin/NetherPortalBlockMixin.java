@@ -6,6 +6,7 @@ import net.blay09.mods.netherportalfix.ReturnPortalManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -24,12 +25,16 @@ public class NetherPortalBlockMixin {
         final ResourceKey<Level> fromDim = entity.level().dimension();
         final var returnPortal = ReturnPortalManager.findReturnPortal(entity, fromDim, fromPos);
         if (returnPortal == null) {
-            NetherPortalFix.logger.info("No return portal found");
+            if (entity instanceof ServerPlayer) {
+                NetherPortalFix.logger.info("No return portal found");
+            }
             return original;
         }
 
         if (!level.getBlockState(returnPortal.getPos()).is(Blocks.NETHER_PORTAL)) {
-            NetherPortalFix.logger.info("Return portal is no longer valid");
+            if (entity instanceof ServerPlayer) {
+                NetherPortalFix.logger.info("Return portal is no longer valid");
+            }
             return original;
         }
 
