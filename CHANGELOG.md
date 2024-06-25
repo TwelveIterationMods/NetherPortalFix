@@ -1,1 +1,1 @@
-- Updated to Minecraft 1.21
+- Fixed log spam when entities frequently pass through portals (e.g. minecart chunk loaders)
