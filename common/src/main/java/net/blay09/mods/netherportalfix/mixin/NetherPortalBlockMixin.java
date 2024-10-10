@@ -19,7 +19,7 @@ import java.util.Optional;
 @Mixin(NetherPortalBlock.class)
 public class NetherPortalBlockMixin {
 
-    @ModifyExpressionValue(method = "getExitPortal(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;ZLnet/minecraft/world/level/border/WorldBorder;)Lnet/minecraft/world/level/portal/DimensionTransition;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/portal/PortalForcer;findClosestPortalPosition(Lnet/minecraft/core/BlockPos;ZLnet/minecraft/world/level/border/WorldBorder;)Ljava/util/Optional;"))
+    @ModifyExpressionValue(method = "getExitPortal(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;ZLnet/minecraft/world/level/border/WorldBorder;)Lnet/minecraft/world/level/portal/TeleportTransition;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/portal/PortalForcer;findClosestPortalPosition(Lnet/minecraft/core/BlockPos;ZLnet/minecraft/world/level/border/WorldBorder;)Ljava/util/Optional;"))
     public Optional<BlockPos> getExitPortal(Optional<BlockPos> original, ServerLevel level, Entity entity) {
         final var fromPos = entity.blockPosition();
         final ResourceKey<Level> fromDim = entity.level().dimension();
