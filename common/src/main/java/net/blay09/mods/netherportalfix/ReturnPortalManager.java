@@ -2,6 +2,7 @@ package net.blay09.mods.netherportalfix;
 
 import net.blay09.mods.balm.api.Balm;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -43,7 +44,7 @@ public class ReturnPortalManager {
 
     public static ListTag getPlayerPortalList(Entity entity) {
         CompoundTag data = Balm.getHooks().getPersistentData(entity);
-        ListTag list = data.getList(RETURN_PORTAL_LIST, Tag.TAG_COMPOUND);
+        ListTag list = data.getListOrEmpty(RETURN_PORTAL_LIST);
         data.put(RETURN_PORTAL_LIST, list);
         return list;
     }
@@ -53,13 +54,18 @@ public class ReturnPortalManager {
         ListTag portalList = getPlayerPortalList(entity);
         for (Tag entry : portalList) {
             CompoundTag portal = (CompoundTag) entry;
-            ResourceKey<Level> entryFromDim = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(portal.getString(FROM_DIM)));
+            ResourceKey<Level> entryFromDim = portal.getString(FROM_DIM)
+                    .map(ResourceLocation::parse)
+                    .map(it -> ResourceKey.create(Registries.DIMENSION, it))
+                    .orElse(null);
             if (entryFromDim == fromDim) {
-                BlockPos portalTrigger = BlockPos.of(portal.getLong(FROM_POS));
-                if (portalTrigger.distSqr(fromPos) <= MAX_PORTAL_DISTANCE_SQ) {
-                    final var uid = portal.hasUUID(RETURN_PORTAL_UID) ? portal.getUUID(RETURN_PORTAL_UID) : UUID.randomUUID();
-                    final var pos = BlockPos.of(portal.getLong(TO_POS));
-                    return new ReturnPortal(uid, pos);
+                final var portalTrigger = portal.getLong(FROM_POS).map(BlockPos::of).orElse(null);
+                if (portalTrigger != null && portalTrigger.distSqr(fromPos) <= MAX_PORTAL_DISTANCE_SQ) {
+                    final var uid = portal.read(RETURN_PORTAL_UID, UUIDUtil.CODEC).orElseGet(UUID::randomUUID);
+                    final var pos = portal.getLong(TO_POS).map(BlockPos::of).orElse(null);
+                    if (pos != null) {
+                        return new ReturnPortal(uid, pos);
+                    }
                 }
             }
         }
@@ -75,7 +81,8 @@ public class ReturnPortalManager {
         }
 
         CompoundTag portalCompound = new CompoundTag();
-        portalCompound.putUUID(RETURN_PORTAL_UID, UUID.randomUUID());
+
+        portalCompound.store(RETURN_PORTAL_UID, UUIDUtil.CODEC, UUID.randomUUID());
         portalCompound.putString(FROM_DIM, String.valueOf(fromDim.location()));
         portalCompound.putLong(FROM_POS, fromPos.asLong());
         portalCompound.putLong(TO_POS, toPos.asLong());
@@ -87,7 +94,8 @@ public class ReturnPortalManager {
         ListTag portalList = getPlayerPortalList(player);
         for (int i = 0; i < portalList.size(); i++) {
             CompoundTag entry = (CompoundTag) portalList.get(i);
-            if (entry.hasUUID(RETURN_PORTAL_UID) && entry.getUUID(RETURN_PORTAL_UID).equals(portal.getUid())) {
+
+            if (entry.read(RETURN_PORTAL_UID, UUIDUtil.CODEC).map(it -> it.equals(portal.getUid())).orElse(false)) {
                 portalList.remove(i);
                 break;
             }
