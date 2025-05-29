@@ -8,6 +8,6 @@ import net.fabricmc.api.ModInitializer;
 public class FabricNetherPortalFix implements ModInitializer {
     @Override
     public void onInitialize() {
-        Balm.initialize(NetherPortalFix.MOD_ID, EmptyLoadContext.INSTANCE, NetherPortalFix::initialize);
+        Balm.initializeMod(NetherPortalFix.MOD_ID, EmptyLoadContext.INSTANCE, NetherPortalFix::initialize);
     }
 }
