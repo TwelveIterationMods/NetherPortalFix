@@ -11,7 +11,7 @@ public class ForgeNetherPortalFix {
 
     public ForgeNetherPortalFix(FMLJavaModLoadingContext context) {
         final var loadContext = new ForgeLoadContext(context.getModEventBus());
-        Balm.initialize(NetherPortalFix.MOD_ID, loadContext, NetherPortalFix::initialize);
+        Balm.initializeMod(NetherPortalFix.MOD_ID, loadContext, NetherPortalFix::initialize);
 
         context.registerDisplayTest(IExtensionPoint.DisplayTest.IGNORE_ALL_VERSION);
     }

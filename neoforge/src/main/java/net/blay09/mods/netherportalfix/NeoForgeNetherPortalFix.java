@@ -10,7 +10,7 @@ public class NeoForgeNetherPortalFix {
 
     public NeoForgeNetherPortalFix(IEventBus modEventBus) {
         final var context = new NeoForgeLoadContext(modEventBus);
-        Balm.initialize(NetherPortalFix.MOD_ID, context, NetherPortalFix::initialize);
+        Balm.initializeMod(NetherPortalFix.MOD_ID, context, NetherPortalFix::initialize);
     }
 
 }
