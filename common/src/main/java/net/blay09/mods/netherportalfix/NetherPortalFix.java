@@ -1,11 +1,11 @@
 package net.blay09.mods.netherportalfix;
 
-import net.blay09.mods.balm.api.Balm;
-import net.blay09.mods.balm.api.event.PlayerChangedDimensionEvent;
+import net.blay09.mods.balm.Balm;
+import net.blay09.mods.balm.core.BalmRegistrars;
+import net.blay09.mods.balm.platform.event.callback.ServerPlayerCallback;
 import net.blay09.mods.netherportalfix.mixin.LivingEntityAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,14 +16,11 @@ public class NetherPortalFix {
 
     public static final Logger logger = LogManager.getLogger();
 
-    public static void initialize() {
-        Balm.getNetworking().allowServerOnly(MOD_ID);
+    public static void initialize(BalmRegistrars registrars) {
+        Balm.networking().allowServerOnly(MOD_ID);
 
         // TODO Why do we have both this and a mixin?
-        Balm.getEvents().onEvent(PlayerChangedDimensionEvent.class, event -> {
-            final ServerPlayer player = event.getPlayer();
-            final ResourceKey<Level> fromDim = event.getFromDim();
-            final ResourceKey<Level> toDim = event.getToDim();
+        ServerPlayerCallback.DimensionChange.EVENT.register((player, fromDim, toDim) -> {
             final ResourceKey<Level> OVERWORLD = Level.OVERWORLD;
             final ResourceKey<Level> THE_NETHER = Level.NETHER;
             if ((fromDim != OVERWORLD || toDim != THE_NETHER) && (fromDim != THE_NETHER || toDim != OVERWORLD)) {
