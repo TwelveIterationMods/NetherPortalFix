@@ -1,5 +1,5 @@
 dependencies {
-    implementation(libs.balmFabric) {
+    modImplementation(libs.balmFabric) {
         changing = libs.versions.balm.get().endsWith("SNAPSHOT")
     }
 }
