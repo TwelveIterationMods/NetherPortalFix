@@ -1,6 +1,6 @@
 package net.blay09.mods.netherportalfix;
 
-import net.blay09.mods.balm.api.Balm;
+import net.blay09.mods.balm.Balm;
 import net.blay09.mods.balm.forge.platform.runtime.ForgeLoadContext;
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.common.Mod;
