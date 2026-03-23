@@ -19,7 +19,6 @@ public class NetherPortalFix {
     public static void initialize(BalmRegistrars registrars) {
         Balm.networking().allowServerOnly(MOD_ID);
 
-        // TODO Why do we have both this and a mixin?
         ServerPlayerCallback.DimensionChange.EVENT.register((player, fromDim, toDim) -> {
             final ResourceKey<Level> OVERWORLD = Level.OVERWORLD;
             final ResourceKey<Level> THE_NETHER = Level.NETHER;
