@@ -29,7 +29,7 @@ public class ReturnPortalManager {
     private static final String FROM_POS = "FromPos";
     private static final String TO_POS = "ToPos";
 
-    public static BlockPos findPortalAt(Player player, ResourceKey<Level> dim, BlockPos pos) {
+    public static @Nullable BlockPos findPortalAt(Player player, ResourceKey<Level> dim, BlockPos pos) {
         MinecraftServer server = player.level().getServer();
         if (server != null) {
             ServerLevel fromWorld = server.getLevel(dim);
@@ -94,7 +94,7 @@ public class ReturnPortalManager {
         for (int i = 0; i < portalList.size(); i++) {
             CompoundTag entry = (CompoundTag) portalList.get(i);
 
-            if (entry.read(RETURN_PORTAL_UID, UUIDUtil.CODEC).map(it -> it.equals(portal.getUid())).orElse(false)) {
+            if (entry.read(RETURN_PORTAL_UID, UUIDUtil.CODEC).map(it -> it.equals(portal.uid())).orElse(false)) {
                 portalList.remove(i);
                 break;
             }

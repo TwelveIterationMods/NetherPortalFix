@@ -1,7 +1,8 @@
-package net.blay09.mods.netherportalfix;
+package net.blay09.mods.netherportalfix.neoforge;
 
 import net.blay09.mods.balm.Balm;
 import net.blay09.mods.balm.neoforge.platform.runtime.NeoForgeLoadContext;
+import net.blay09.mods.netherportalfix.NetherPortalFix;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;

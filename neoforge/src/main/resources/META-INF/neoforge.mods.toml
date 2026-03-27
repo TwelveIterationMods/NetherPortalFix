@@ -3,32 +3,32 @@ loaderVersion="[1,)"
 license="${license}"
 issueTrackerURL="https://github.com/TwelveIterations/Balm/issues"
 [[mods]]
-modId="${mod_id}"
+modId="netherportalfix"
 version="${version}"
 displayName="${mod_name}"
 displayURL="https://mods.twelveiterations.com/"
 displayTest="NONE"
-logoFile="${mod_id}.png"
+logoFile="netherportalfix.png"
 credits="BlayTheNinth"
 authors="BlayTheNinth"
 description='''${description}'''
 [[mixins]]
-config = "${mod_id}.mixins.json"
+config = "netherportalfix.mixins.json"
 [[mixins]]
-config = "${mod_id}.neoforge.mixins.json"
-[[dependencies.${mod_id}]]
+config = "netherportalfix.neoforge.mixins.json"
+[[dependencies.netherportalfix]]
 modId="neoforge"
 type="required"
 versionRange="[${neoforge_version},)"
 ordering="NONE"
 side="BOTH"
-[[dependencies.${mod_id}]]
+[[dependencies.netherportalfix]]
 modId="minecraft"
 type="required"
 versionRange="[${minecraft_version},)"
 ordering="NONE"
 side="BOTH"
-[[dependencies.${mod_id}]]
+[[dependencies.netherportalfix]]
 modId="balm"
 type="required"
 versionRange="[${balm_version},)"

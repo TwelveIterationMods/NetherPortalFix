@@ -19,6 +19,7 @@ import java.util.Optional;
 @Mixin(NetherPortalBlock.class)
 public class NetherPortalBlockMixin {
 
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     @ModifyExpressionValue(method = "getExitPortal(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;ZLnet/minecraft/world/level/border/WorldBorder;)Lnet/minecraft/world/level/portal/TeleportTransition;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/portal/PortalForcer;findClosestPortalPosition(Lnet/minecraft/core/BlockPos;ZLnet/minecraft/world/level/border/WorldBorder;)Ljava/util/Optional;"))
     public Optional<BlockPos> getExitPortal(Optional<BlockPos> original, ServerLevel level, Entity entity) {
         final var fromPos = entity.blockPosition();
@@ -31,7 +32,7 @@ public class NetherPortalBlockMixin {
             return original;
         }
 
-        if (!level.getBlockState(returnPortal.getPos()).is(Blocks.NETHER_PORTAL)) {
+        if (!level.getBlockState(returnPortal.pos()).is(Blocks.NETHER_PORTAL)) {
             if (entity instanceof ServerPlayer) {
                 NetherPortalFix.logger.info("Return portal is no longer valid");
             }
@@ -39,7 +40,7 @@ public class NetherPortalBlockMixin {
         }
 
         NetherPortalFix.logger.debug("Return portal found, redirecting! :)");
-        return Optional.of(returnPortal.getPos());
+        return Optional.of(returnPortal.pos());
     }
 
 }
