@@ -17,7 +17,7 @@ Minecraft Mod. Ensures correct destinations when travelling back and forth throu
 ## Contributing
 
 If you're interested in contributing to the mod, you can check
-out [issues labelled as "help wanted"](https://github.com/TwelveIterationMods/NetherPortalFix/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22).
+out [issues labelled as "help wanted"](https://github.com/TwelveIterations/NetherPortalFix/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22).
 
 When it comes to new features, it's best to confer with me first to ensure we share the same vision. You can join us on [Discord](https://discord.gg/VAfZ2Nau6j) if you'd like to talk.
 
